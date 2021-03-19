@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "547863365821",
+    "project_id": "dungeonhunter-260cb",
+    "storage_bucket": "dungeonhunter-260cb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:547863365821:android:9a89a312b88f29e0320fd4",
+        "android_client_info": {
+          "package_name": "com.jonyn.dungeonhunter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "547863365821-lqg8ulf00ner1vu0tjklpl816vlf1anp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jonyn.dungeonhunter",
+            "certificate_hash": "1f830c2aca67416a0c767c51fedf344789b39527"
+          }
+        },
+        {
+          "client_id": "547863365821-s81gp54i9j3jfckhtrcgm72lem273hem.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrVGm0zEFfKWHmxsVIy6A7ZFXn1cUvWUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "547863365821-s81gp54i9j3jfckhtrcgm72lem273hem.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

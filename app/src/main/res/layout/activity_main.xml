@@ -12,13 +12,5 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="5dp">
-
-        <!--<fragment
-            android:id="@+id/frgFragment"
-            android:name="com.jonyn.dhgame.fragments.MainFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:layout="@layout/fragment_main" />-->
-    </FrameLayout>
+        android:layout_margin="5dp"/>
 </LinearLayout>

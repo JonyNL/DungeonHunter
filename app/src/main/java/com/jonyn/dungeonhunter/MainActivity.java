@@ -1,10 +1,16 @@
 package com.jonyn.dungeonhunter;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.widget.Button;
+import android.widget.FrameLayout;
+
+import com.jonyn.dungeonhunter.fragments.MainFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,11 +24,31 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private FrameLayout container;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
+        container = findViewById(R.id.container);
+
+        // Guardamos el fragment manager para asignar el nuevo fragment que vamos a crear.
+        FragmentManager manager = getSupportFragmentManager();
+
+        // Creamos un MainFragment pasandole dos Strings vacios como parametros.
+        Fragment fragment = MainFragment.newInstance("","");
+
+        // A traves del FragmentManager que guardamos antes, realizamos la transaccion
+        // del fragment pero no lo agregamos al BackStack para salir de la app directamente
+        // en caso de pulsar el boton back.
+        String mainFragment = fragment.getClass().getName();
+        manager.popBackStack();
+        manager.beginTransaction()
+                .replace(R.id.container, fragment, mainFragment)
+                //.addToBackStack()
+                .commit();
 
         // Ocultamos la UI del dipositivo.
         hideSystemUI();
@@ -38,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+
     }
     /**Oculta la UI del dispositivo 2000 ms desde la llamada*/
     private void delayedHide() {
@@ -72,4 +99,9 @@ public class MainActivity extends AppCompatActivity {
         getWindow().getDecorView().setSystemUiVisibility(uiOptions);
     }
 
+    @Override
+    public void onBackPressed() {
+        getSupportFragmentManager().popBackStackImmediate();
+        //super.onBackPressed();
+    }
 }

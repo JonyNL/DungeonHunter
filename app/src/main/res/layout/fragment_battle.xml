@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".fragments.BattleFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/ibLog"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/background_light"
+            android:src="@android:drawable/ic_menu_recent_history" />
+
+        <TextView
+            android:id="@+id/tvEnemyName"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="9"
+            android:gravity="center"
+            android:text="Kappa"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/pbEnemyLP"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_weight="3"
+        android:max="100"
+        android:progress="50"
+        android:progressTint="@color/colorLP" />
+
+    <ProgressBar
+        android:id="@+id/pbEnemyMP"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_weight="3"
+        android:max="100"
+        android:progress="50"
+        android:progressTint="@color/colorMP" />
+
+    <ImageView
+        android:id="@+id/ivEnemy"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="50"
+        app:srcCompat="@drawable/kappa"
+        tools:src="@tools:sample/avatars" />
+
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="20"
+        android:fillViewport="true">
+
+        <TextView
+            android:id="@+id/tvLog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="21"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="40"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvPlayerName"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="15"
+                android:gravity="center"
+                android:text="Jony"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/ivHero"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="65"
+                app:srcCompat="@drawable/ryuma"
+                tools:src="@tools:sample/avatars" />
+
+            <ProgressBar
+                android:id="@+id/pbHeroLP"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_weight="10"
+                android:max="100"
+                android:progress="50"
+                android:progressTint="@color/colorLP" />
+
+            <ProgressBar
+                android:id="@+id/pbHeroMP"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_weight="10"
+                android:max="100"
+                android:progress="50"
+                android:progressTint="@color/colorMP" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="60"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btnAttack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/attack" />
+
+            <Button
+                android:id="@+id/btnAbilities"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/abilities" />
+
+            <Button
+                android:id="@+id/btnItems"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/items" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
