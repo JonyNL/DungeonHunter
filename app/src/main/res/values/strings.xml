@@ -13,5 +13,8 @@
     <string name="newhero">New Hero</string>
     <string name="confirm">Confirm</string>
     <string name="heroName">Hero Name</string>
+    <string name="no_user">No active user</string>
+    <string name="hero_lvl">Level: %1$s</string>
+    <string name="exp_value">%1$s/%2$s</string>
 
 </resources>

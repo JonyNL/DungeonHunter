@@ -9,8 +9,8 @@ public class Passive extends Ability {
     public Passive(){}
 
     // Constructor con parametros.
-    public Passive(String ability, String definition, String effect){
-        super(ability, definition);
+    public Passive(String ability, String definition, String effect, AbilityType abilityType){
+        super(ability, definition, abilityType);
         this.effect = effect;
     }
 

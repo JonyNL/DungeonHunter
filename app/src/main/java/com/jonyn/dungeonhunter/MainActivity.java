@@ -1,9 +1,11 @@
 package com.jonyn.dungeonhunter;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -38,16 +40,13 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager manager = getSupportFragmentManager();
 
         // Creamos un MainFragment pasandole dos Strings vacios como parametros.
-        Fragment fragment = MainFragment.newInstance("","");
+        Fragment fragment = MainFragment.newInstance();
 
         // A traves del FragmentManager que guardamos antes, realizamos la transaccion
-        // del fragment pero no lo agregamos al BackStack para salir de la app directamente
-        // en caso de pulsar el boton back.
+        // del fragment
         String mainFragment = fragment.getClass().getName();
-        manager.popBackStack();
         manager.beginTransaction()
                 .replace(R.id.container, fragment, mainFragment)
-                //.addToBackStack()
                 .commit();
 
         // Ocultamos la UI del dipositivo.
@@ -99,9 +98,30 @@ public class MainActivity extends AppCompatActivity {
         getWindow().getDecorView().setSystemUiVisibility(uiOptions);
     }
 
+    /**
+     * sobreescribimos el metodo para cerrar la app en caso de pulsar back
+     * */
     @Override
     public void onBackPressed() {
-        getSupportFragmentManager().popBackStackImmediate();
-        //super.onBackPressed();
+        // Hacemos que al pulsar back en cualquier parte de la app salga un dialogo que nos
+        // pregunte si queremos cerrar la app, y en caso positivo la cerramos
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        MainActivity.this.finish();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        dialog.dismiss();
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Close app?").setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
     }
 }

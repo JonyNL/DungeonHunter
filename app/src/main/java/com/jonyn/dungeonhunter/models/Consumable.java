@@ -12,6 +12,7 @@ public abstract class Consumable extends Item {
     // Constructor con parametros.
     public Consumable(String name, String description, int quantity, String effect) {
         super(name, description);
+        this.effect = effect;
         this.quantity = quantity;
     }
 

@@ -9,8 +9,9 @@ public class Sword extends Weapon {
     private Sword(){}
 
     // Constructor con parametros
-    public Sword(String name, String description, int durability, boolean equipped, int damage) {
-        super(name, description, durability, equipped);
+    public Sword(String name, String description, int durability, boolean equipped, int damage,
+                 WeaponType weaponType) {
+        super(name, description, durability, equipped, weaponType);
         this.damage = damage;
     }
 

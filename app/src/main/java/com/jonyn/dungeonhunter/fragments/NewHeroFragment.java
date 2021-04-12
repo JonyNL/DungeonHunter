@@ -14,16 +14,19 @@ import androidx.fragment.app.FragmentManager;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.jonyn.dungeonhunter.R;
+import com.jonyn.dungeonhunter.models.Hero;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import static com.jonyn.dungeonhunter.fragments.HeroSelectFragment.FB_USER_UID;
-import static com.jonyn.dungeonhunter.fragments.HeroSelectFragment.HERO_POS;
+import static com.jonyn.dungeonhunter.DbUtils.FB_USER_UID;
+import static com.jonyn.dungeonhunter.DbUtils.HERO_POS;
+
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link NewHeroFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Metodo para agregar un nuevo heroe a la lista del usuario en una posicion especifica
  */
 public class NewHeroFragment extends Fragment {
 
@@ -40,13 +43,12 @@ public class NewHeroFragment extends Fragment {
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
+     * Instancia para crear un nuevo heroe para la lista del usuario en una posicion especifica.
      *
      * @param usrUID ID del usuario.
-     * @return A new instance of fragment NewHeroFragment.
+     * @param Pos Posicion del heroe en la lista.
+     * @return Una nueva instancia de NewHeroFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static NewHeroFragment newInstance(String usrUID, int Pos) {
         NewHeroFragment fragment = new NewHeroFragment();
         Bundle args = new Bundle();
@@ -55,24 +57,13 @@ public class NewHeroFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
-    
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_new_hero, container, false);
+    public void onStart() {
+        super.onStart();
 
-        Bundle b = getArguments();
-        usrUID = b.getString(FB_USER_UID);
-        heroPos = b.getInt(HERO_POS, -1);
-        db = FirebaseFirestore.getInstance();
+        List<String> classesList = Arrays.asList(Hero.HeroClass.getNames(Hero.HeroClass.class));
 
-        etHeroName = v.findViewById(R.id.etHeroName);
-        spClasses = v.findViewById(R.id.spClasses);
-        btnConfirm = v.findViewById(R.id.btnConfirm);
-
-        ArrayList<String> classesList = new ArrayList<>();
-        classesList.add("Warrior");
-        classesList.add("Wizard");
         final ArrayAdapter<String> spAdapter = new ArrayAdapter<String>(getContext(),
                 android.R.layout.simple_spinner_item, classesList);
         spAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -96,14 +87,28 @@ public class NewHeroFragment extends Fragment {
                     // A traves del FragmentManager que guardamos antes, realizamos la transaccion
                     // del fragment
                     String newFragment = fragment.getClass().getName();
-                    manager.popBackStack();
                     manager.beginTransaction()
                             .replace(R.id.container, fragment, newFragment)
-                            .addToBackStack(null)
                             .commit();
                 }
             }
         });
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_new_hero, container, false);
+
+        Bundle b = getArguments();
+        usrUID = b.getString(FB_USER_UID);
+        heroPos = b.getInt(HERO_POS, -1);
+        db = FirebaseFirestore.getInstance();
+
+        etHeroName = v.findViewById(R.id.etHeroName);
+        spClasses = v.findViewById(R.id.spClasses);
+        btnConfirm = v.findViewById(R.id.btnConfirm);
+
 
         return v;
     }

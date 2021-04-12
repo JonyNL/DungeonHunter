@@ -13,8 +13,8 @@ public class Wizard extends Hero {
     // Constructor con parametros.
     public Wizard(String name, int strength, int defense, int agility, int luck,
                   List<Ability> actives, List<Ability> passives, List<Item> inventory,
-                  Weapon weapon, int intelligence) {
-        super(name, strength, defense, agility, luck, actives, passives, inventory, weapon);
+                  Weapon weapon, int intelligence, HeroClass heroClass) {
+        super(name, strength, defense, agility, luck, actives, passives, inventory, weapon, heroClass);
         this.intelligence =  intelligence;
     }
 
@@ -22,9 +22,9 @@ public class Wizard extends Hero {
     public Wizard(String name, int lvl, int maxMp, int maxLp, int lp, int mp, int strength,
                   int defense, int agility, int luck, int reqExp, int exp,
                   List<Ability> actives, List<Ability> passives, List<Item> inventory,
-                  Weapon weapon, int intelligence) {
+                  Weapon weapon, int intelligence, HeroClass heroClass) {
         super(name, lvl, maxMp, maxLp, lp, mp, strength, defense, agility, luck, reqExp, exp,
-                actives, passives, inventory, weapon);
+                actives, passives, inventory, weapon, heroClass);
         this.intelligence = intelligence;
     }
 
@@ -34,7 +34,8 @@ public class Wizard extends Hero {
         super(name, 3, 2, 8, 10, new ArrayList<Ability>(),
                 new ArrayList<Ability>(), new ArrayList<Item>(),
                 new Wand("Wooden wand", "Simple wand made of wood",
-                        100, true, 10));
+                        100, true, 10, Weapon.WeaponType.WAND),
+                HeroClass.WIZARD);
     }
 
     public int getIntelligence() {

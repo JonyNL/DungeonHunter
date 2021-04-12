@@ -3,6 +3,7 @@ package com.jonyn.dungeonhunter.fragments;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,9 +14,16 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.jonyn.dungeonhunter.R;
 import com.jonyn.dungeonhunter.models.Consumable;
 import com.jonyn.dungeonhunter.models.Enemy;
@@ -23,7 +31,13 @@ import com.jonyn.dungeonhunter.models.Hero;
 import com.jonyn.dungeonhunter.models.Item;
 import com.jonyn.dungeonhunter.models.Potion;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static com.jonyn.dungeonhunter.DbUtils.FB_USER_UID;
+import static com.jonyn.dungeonhunter.DbUtils.HERO_POS;
 
 
 /**
@@ -51,6 +65,8 @@ public class BattleFragment extends Fragment {
     // Heroe y enemigo a enfrentarse
     private Hero hero;
     private Enemy enemy;
+    String usrUID;
+    int pos;
 
     // Variables auxiliares para la batalla
     private int round = 1;
@@ -67,11 +83,13 @@ public class BattleFragment extends Fragment {
      * @param enemy Enemigo al que se enfrenta el jugador.
      * @return una nueva instancia de BattleFragment.
      * */
-    public static BattleFragment newInstance(Hero hero, Enemy enemy) {
+    public static BattleFragment newInstance(String usrUID, int pos, Hero hero, Enemy enemy) {
         BattleFragment fragment = new BattleFragment();
         Bundle args = new Bundle();
         args.putSerializable(HERO, hero);
         args.putSerializable(ENEMY, enemy);
+        args.putString(FB_USER_UID, usrUID);
+        args.putInt(HERO_POS, pos);
         fragment.setArguments(args);
         return fragment;
     }
@@ -84,7 +102,6 @@ public class BattleFragment extends Fragment {
         btnAbilities.setClickable(false);
 
         // TODO - Con el objetivo de testear, agregamos un item al inventario del heroe
-
         //hero = new Warrior("Jony");
         hero.getInventory().add(new Potion("Health Potion",
                 "Potions that restores 20 points of your life points",
@@ -334,8 +351,8 @@ public class BattleFragment extends Fragment {
         // Creamos un dialogo con un titulo avisando del resultado de la partida y un mensaje que
         // nos avisa de que vamos a volver a la pantalla de login.
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity())
-                .setTitle(message)
-                .setMessage("Press OK to go to login screen.");
+                .setTitle(message);
+                //.setMessage("Press OK to go to login screen.");
 
         // Asignamos al dialogo el boton OK con el click listener.
         alertDialog.setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -343,7 +360,14 @@ public class BattleFragment extends Fragment {
             public void onClick(DialogInterface dialog, int which) {
                 // Cuando el usuario le de click al boton OK, recreamos la activity para reiniciar
                 // el juego y volver al menu de login.
-                getActivity().recreate();
+                FragmentManager manager = getFragmentManager();
+
+                DungeonFragment fragment = DungeonFragment.newInstance(usrUID, pos, hero);
+                String newFragment = fragment.getClass().getName();
+                manager.beginTransaction()
+                        .replace(R.id.container, fragment, newFragment)
+                        .commit();
+
             }
         });
 
@@ -362,18 +386,58 @@ public class BattleFragment extends Fragment {
         btnAttack.setClickable(false);
         btnItems.setClickable(false);
 
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         // Creamos un String que asignaremos al realizar la comprobacion del ganador
         // con un mensaje acorde al resultado de la partida.
         String message;
         // Comprobamos si el heroe tiene mas vida que el enemigo, en cuyo caso ganaria
         if (hero.getLp()>enemy.getLp()){
+            // Sumamos los puntos de experiencia al heroe
+            hero.setExp(hero.getExp() + 50);
+
+            if (hero.getExp()>= hero.getReqExp()) {
+                // Si el heroe ha alcanzado o superado los puntos de experiencia requeridos para
+                // subir de nivel, aumenta en 1 su nivel y arrastra los puntos extra para el proximo
+                hero.lvlUp();
+                hero.setExp(hero.getExp() - hero.getReqExp());
+            }
             message = "=========You Win!=========";
-            showAlertDialog(message);
         } else {
             // En caso contrario habria perdido
+            hero.setLp(hero.getMaxLp());
             message = "=========You Lose=========";
-            showAlertDialog(message);
         }
+
+        /*// Creamos una referencia al documento que almacena los heroes del usuario a traves del
+        // path del documento de la coleccion users.
+        DocumentReference docRef = db.collection("users").document(usrUID);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()){
+                    DocumentSnapshot doc = task.getResult();
+                    if (doc.exists()) {
+                        // Convertimos el documento en un listado de Map<String, Object>, que cada
+                        // uno representara un listado de los atributos de cada uno de los heroes.
+                        List<Map<String, Object>> dbHeroes = (List<Map<String, Object>>) doc.get("heroes");
+
+                        Map<String, Object> heroDoc = new HashMap<>();
+
+                        List<Hero> heroMap = new ArrayList<>();
+                        heroMap.add(hero);
+
+                        heroDoc.put("heroes",heroMap);
+
+                        dbHeroes.set(pos, heroDoc);
+
+                        Log.i(this.getClass().getName(), dbHeroes.toString());
+                    }
+                }
+            }
+        });*/
+
+        showAlertDialog(message);
 
         // Agregamos el mensaje al Log de la partida y movemos el scroll al final
         tvLog.append(message);
@@ -404,8 +468,8 @@ public class BattleFragment extends Fragment {
         Bundle b = getArguments();
         hero = (Hero) b.getSerializable(HERO);
         enemy = (Enemy) b.getSerializable(ENEMY);
-
-
+        usrUID = b.getString(FB_USER_UID);
+        pos = b.getInt(HERO_POS);
 
         // Devolvemos la vista.
         return v;

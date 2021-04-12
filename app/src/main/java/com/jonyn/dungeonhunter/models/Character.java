@@ -170,4 +170,22 @@ public abstract class Character implements Serializable {
     public void addActive(Ability active){
         this.actives.add(active);
     }
+
+    @Override
+    public String toString() {
+        return "Character{" +
+                "name='" + name + '\'' +
+                ", lvl=" + lvl +
+                ", maxLp=" + maxLp +
+                ", lp=" + lp +
+                ", maxMp=" + maxMp +
+                ", mp=" + mp +
+                ", strength=" + strength +
+                ", defense=" + defense +
+                ", agility=" + agility +
+                ", luck=" + luck +
+                ", actives=" + actives +
+                ", passives=" + passives +
+                '}';
+    }
 }

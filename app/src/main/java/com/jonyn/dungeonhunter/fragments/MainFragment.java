@@ -27,6 +27,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.jonyn.dungeonhunter.DbUtils;
 import com.jonyn.dungeonhunter.R;
 import com.jonyn.dungeonhunter.models.Enemy;
 import com.jonyn.dungeonhunter.models.Warrior;
@@ -40,10 +41,6 @@ public class MainFragment extends Fragment {
     public static final String TAG = "MAIN_FRAGMENT";
 
     private static final int RC_SIGN_IN = 9001;
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
     // Metodos para gestionar el login a traves de Google a Firebase.
     private GoogleSignInClient mGoogleSignInClient;
@@ -55,27 +52,20 @@ public class MainFragment extends Fragment {
     private Button btnStart;
     private Button btnSignOut;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     /** Metodo vacio por si es necesario */
     public MainFragment() {
     }
 
     /**
-     * Metodo para crear una instancia de MainFragment con los parametros especificados.
+     * Metodo para crear una instancia de MainFragment.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return Una nueva instancia de MainFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MainFragment newInstance(String param1, String param2) {
+    public static MainFragment newInstance() {
         MainFragment fragment = new MainFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -83,10 +73,6 @@ public class MainFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
 
         // Inicializamos Firebase Auth
         mAuth = FirebaseAuth.getInstance();
@@ -115,6 +101,7 @@ public class MainFragment extends Fragment {
     private void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
+
     }
 
     /**
@@ -131,7 +118,7 @@ public class MainFragment extends Fragment {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         Toast.makeText(getActivity(), "Signed Out", Toast.LENGTH_SHORT).show();
-                            tvUser.setText("No active User");
+                            tvUser.setText(R.string.no_user);
                     }
                 });
     }
@@ -157,7 +144,7 @@ public class MainFragment extends Fragment {
     }
 
     /** Metodo que comprueba el usuario en Firebase. */
-    // [START auth_with_google]
+    // region [START auth_with_google]
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
 
@@ -170,6 +157,8 @@ public class MainFragment extends Fragment {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
+                            if (DbUtils.getHeroes().isEmpty())
+                                DbUtils.loadHeroList(getContext(), user.getUid());
                             tvUser.setText(user.getDisplayName());
                             Toast.makeText(getActivity(), "Sign in Success", Toast.LENGTH_SHORT).show();
                         } else {
@@ -179,7 +168,7 @@ public class MainFragment extends Fragment {
                     }
                 });
     }
-    // [END auth_with_google]
+    // endregion [END auth_with_google]
 
 
     @Override
@@ -187,18 +176,23 @@ public class MainFragment extends Fragment {
         super.onStart();
         // Recibimos el usuario abierto en Firebase, o null en caso que no lo haya.
         final FirebaseUser currentUser = mAuth.getCurrentUser();
+        DbUtils.loadEnemies();
 
         // Si el usuario no es null mostramos el nombre en un TextView.
-        if (currentUser!= null)
-        tvUser.setText(currentUser.getDisplayName());
+        if (currentUser!= null) {
+            tvUser.setText(currentUser.getDisplayName());
+            if (DbUtils.getHeroes().isEmpty())
+                DbUtils.loadHeroList(getContext(), currentUser.getUid());
+        }
 
-        // Asignamos un listener al boton Start para ir a una batalla.
+
+        // Asignamos un listener al boton Start para ir a la seleccion de heroe.
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 // Comprobamos que haya un usuario logueado.
-                if (mAuth.getCurrentUser() != null){
+                if (currentUser != null){
 
                     db = FirebaseFirestore.getInstance();
 
@@ -210,29 +204,10 @@ public class MainFragment extends Fragment {
                     Fragment fragment = HeroSelectFragment.newInstance(currentUser.getUid());
 
                     // A traves del FragmentManager que guardamos antes, realizamos la transaccion
-                    // del fragment agregandolo al BackStack.
                     String newFragment = fragment.getClass().getName();
                     manager.beginTransaction()
                             .replace(R.id.container, fragment, newFragment)
-                            .addToBackStack(newFragment)
                             .commit();
-
-                    /*// En caso afirmativo, guardamos el fragment manager para asignar el nuevo
-                    // fragment que vamos a crear.
-                    FragmentManager manager = getFragmentManager();
-
-                    // Creamos un BattleFragment pasandole como parametros el heroe y el enemigo.
-                    Fragment fragment = BattleFragment.newInstance(new Warrior(mAuth.getCurrentUser()
-                            .getDisplayName()), new Enemy("Kappa", Enemy.Types.DEMON));
-
-                    // A traves del FragmentManager que guardamos antes, realizamos la transaccion
-                    // del fragment agregandolo al BackStack.
-                    String battleFragment = fragment.getClass().getName();
-                    manager.popBackStack();
-                    manager.beginTransaction()
-                            .replace(R.id.container, fragment, battleFragment)
-                            .addToBackStack(battleFragment)
-                            .commit();*/
                 } else
                     // En caso contrario, abriremos el dialogo de inicio de sesion.
                     signIn();

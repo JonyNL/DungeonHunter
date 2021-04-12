@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "547863365821",
+    "firebase_url": "https://dungeonhunter-260cb-default-rtdb.firebaseio.com",
     "project_id": "dungeonhunter-260cb",
     "storage_bucket": "dungeonhunter-260cb.appspot.com"
   },
@@ -14,11 +15,19 @@
       },
       "oauth_client": [
         {
-          "client_id": "547863365821-lqg8ulf00ner1vu0tjklpl816vlf1anp.apps.googleusercontent.com",
+          "client_id": "547863365821-gefjh7uo6p2j8sv82co8kj5k782vta06.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.jonyn.dungeonhunter",
-            "certificate_hash": "1f830c2aca67416a0c767c51fedf344789b39527"
+            "certificate_hash": "51fd571eef70a12e359c767016a66dcec5669093"
+          }
+        },
+        {
+          "client_id": "547863365821-t5853uqjhari239s3o1obesf46umpbjo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jonyn.dungeonhunter",
+            "certificate_hash": "86923c857e7f9c841416d38787f90530b241d13e"
           }
         },
         {
