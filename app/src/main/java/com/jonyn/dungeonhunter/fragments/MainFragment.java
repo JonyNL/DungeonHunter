@@ -1,5 +1,6 @@
 package com.jonyn.dungeonhunter.fragments;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,11 +27,10 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.jonyn.dungeonhunter.DbUtils;
+import com.jonyn.dungeonhunter.IAbilityListener;
 import com.jonyn.dungeonhunter.R;
-import com.jonyn.dungeonhunter.models.Enemy;
-import com.jonyn.dungeonhunter.models.Warrior;
+import com.jonyn.dungeonhunter.models.Ability;
 
 /**
  * Fragment inicial para iniciar sesion y comenzar el juego.
@@ -45,7 +45,6 @@ public class MainFragment extends Fragment {
     // Metodos para gestionar el login a traves de Google a Firebase.
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
 
     // Elementos del layout.
     private TextView tvUser;
@@ -62,7 +61,6 @@ public class MainFragment extends Fragment {
      *
      * @return Una nueva instancia de MainFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static MainFragment newInstance() {
         MainFragment fragment = new MainFragment();
         Bundle args = new Bundle();
@@ -157,8 +155,9 @@ public class MainFragment extends Fragment {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            if (DbUtils.getHeroes().isEmpty())
+                            if (DbUtils.getHeroes().isEmpty()){
                                 DbUtils.loadHeroList(getContext(), user.getUid());
+                            }
                             tvUser.setText(user.getDisplayName());
                             Toast.makeText(getActivity(), "Sign in Success", Toast.LENGTH_SHORT).show();
                         } else {
@@ -178,7 +177,7 @@ public class MainFragment extends Fragment {
         final FirebaseUser currentUser = mAuth.getCurrentUser();
         DbUtils.loadEnemies();
 
-        // Si el usuario no es null mostramos el nombre en un TextView.
+        // Si el usuario no es null mostramos el nombre en un TextView y cargamos los heroes.
         if (currentUser!= null) {
             tvUser.setText(currentUser.getDisplayName());
             if (DbUtils.getHeroes().isEmpty())
@@ -194,8 +193,6 @@ public class MainFragment extends Fragment {
                 // Comprobamos que haya un usuario logueado.
                 if (currentUser != null){
 
-                    db = FirebaseFirestore.getInstance();
-
                     // En caso afirmativo, guardamos el fragment manager para asignar el nuevo
                     // fragment que vamos a crear.
                     FragmentManager manager = getFragmentManager();
@@ -203,11 +200,13 @@ public class MainFragment extends Fragment {
                     // Creamos un BattleFragment pasandole como parametros el heroe y el enemigo.
                     Fragment fragment = HeroSelectFragment.newInstance(currentUser.getUid());
 
-                    // A traves del FragmentManager que guardamos antes, realizamos la transaccion
+                    DbUtils.loadFragment(manager, fragment);
+
+                    /*// A traves del FragmentManager que guardamos antes, realizamos la transaccion
                     String newFragment = fragment.getClass().getName();
                     manager.beginTransaction()
                             .replace(R.id.container, fragment, newFragment)
-                            .commit();
+                            .commit();*/
                 } else
                     // En caso contrario, abriremos el dialogo de inicio de sesion.
                     signIn();
@@ -223,8 +222,11 @@ public class MainFragment extends Fragment {
                 // Comprobamos si hay un usuario logueado, y solo si no lo hay llamamos a signIn().
                if (mAuth.getCurrentUser()== null)
                    signIn();
-               else
+               else {
                     signOut();
+                    DbUtils.clearHeroList();
+                    btnSignOut.setText("Sign In");
+               }
             }
         });
     }

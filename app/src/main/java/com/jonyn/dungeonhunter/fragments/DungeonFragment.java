@@ -42,7 +42,6 @@ public class DungeonFragment extends Fragment {
     public static final String TAG = "DUNGEON_FRAGMENT";
 
     private String usrUID;
-    private FirebaseFirestore db;
     private int heroPos;
     private Hero hero;
     private Enemy enemy;
@@ -144,7 +143,9 @@ public class DungeonFragment extends Fragment {
         heroPos = b.getInt(HERO_POS);
         hero = (Hero) b.getSerializable(HERO);
         enemy = null;
-        db = FirebaseFirestore.getInstance();
+        //db = FirebaseFirestore.getInstance();
+
+        DbUtils.updateDbHeroList(usrUID);
 
         tvHeroName = v.findViewById(R.id.tvHeroName);
         tvHeroLvl = v.findViewById(R.id.tvHeroLvl);

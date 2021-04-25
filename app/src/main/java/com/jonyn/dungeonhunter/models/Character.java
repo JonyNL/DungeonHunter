@@ -1,6 +1,7 @@
 package com.jonyn.dungeonhunter.models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Character implements Serializable {
@@ -151,7 +152,6 @@ public abstract class Character implements Serializable {
     public List<Ability> getPassives() {
         return passives;
     }
-
 
     /** Metodos de utilidad */
 

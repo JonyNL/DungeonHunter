@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentManager;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -15,8 +16,9 @@ import android.widget.FrameLayout;
 import com.jonyn.dungeonhunter.fragments.MainFragment;
 
 public class MainActivity extends AppCompatActivity {
-
+    public static String TAG = "MAIN_ACTIVITY";
     private Handler mHandler = new Handler();
+
 
     /**Runnable que gestiona el comportamiento de la interfaz del sistema*/
     private final Runnable mHideRunnable = new Runnable() {

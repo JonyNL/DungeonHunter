@@ -3,14 +3,19 @@ package com.jonyn.dungeonhunter.fragments;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,13 +23,19 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.jonyn.dungeonhunter.AbilitiesAdapter;
+import com.jonyn.dungeonhunter.IAbilityListener;
 import com.jonyn.dungeonhunter.R;
+import com.jonyn.dungeonhunter.models.Ability;
+import com.jonyn.dungeonhunter.models.Active;
 import com.jonyn.dungeonhunter.models.Consumable;
 import com.jonyn.dungeonhunter.models.Enemy;
 import com.jonyn.dungeonhunter.models.Hero;
@@ -44,7 +55,7 @@ import static com.jonyn.dungeonhunter.DbUtils.HERO_POS;
  * Fragment para gestionar las batallas
  *
  */
-public class BattleFragment extends Fragment {
+public class BattleFragment extends Fragment implements IAbilityListener {
 
     // Etiquetas para buscar los argumentos del fragment.
     private static final String HERO = "hero";
@@ -61,12 +72,16 @@ public class BattleFragment extends Fragment {
     private ProgressBar pbHeroLP;
     private ProgressBar pbHeroMP;
     private ScrollView scroll;
+    private RecyclerView rvAbilites;
+    private LinearLayout llHero;
+
 
     // Heroe y enemigo a enfrentarse
     private Hero hero;
     private Enemy enemy;
     String usrUID;
     int pos;
+    IAbilityListener listener;
 
     // Variables auxiliares para la batalla
     private int round = 1;
@@ -98,19 +113,23 @@ public class BattleFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        // TODO - Boton no clickable porque aun no esta implementado el sistema de habilidades
-        btnAbilities.setClickable(false);
+        listener = this;
 
         // TODO - Con el objetivo de testear, agregamos un item al inventario del heroe
-        //hero = new Warrior("Jony");
-        hero.getInventory().add(new Potion("Health Potion",
+
+        if (hero.getActives().isEmpty())
+            hero.addActive(new Active("Healing", "Heals 30 LP", "LP+30",
+                10, Ability.AbilityType.ACTIVE, Ability.EffectType.REGEN));
+
+        if (hero.getInventory().isEmpty())
+            hero.getInventory().add(new Potion("Health Potion",
                 "Potions that restores 20 points of your life points",
                 5, "LP +20", Potion.Types.HEALTH_POTION, 20));
 
         /** Establecemos el valor maximo y actual de las barras que representan la salud y la
          *  energia de los personajes, tanto el heroe como el enemigo.*/
 
-        // [START progress_bars_assignment]
+        // region [START progress_bars_assignment]
         // Establecemos el valor maximo de la vida del heroe.
         pbHeroLP.setMax(hero.getMaxLp());
 
@@ -171,7 +190,7 @@ public class BattleFragment extends Fragment {
                 }
             });
         }
-        // [END progress_bars_assignment]
+        // endregion [END progress_bars_assignment]
 
         // Vamos describiendo los acontecimientos en un TextView, encabezado por este texto
         tvLog.append("========"+hero.getName() + " VS " + enemy.getName()+"========\n");
@@ -181,7 +200,7 @@ public class BattleFragment extends Fragment {
         playTurn();
 
         // Establecemos los listeners a los botones para realizar las acciones correspondientes.
-        // [START buttons_click_listeners]
+        // region [START buttons_click_listeners]
         btnAttack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -223,6 +242,34 @@ public class BattleFragment extends Fragment {
             }
         });
         //TODO implement btnAbilities.onClick()
+        btnAbilities.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AbilitiesAdapter adapter = new AbilitiesAdapter(hero.getActives());
+
+
+                adapter.setListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (listener!= null){
+                            listener.onAbilityClick(hero.getActives().get(rvAbilites.getChildAdapterPosition(v)));
+
+                            rvAbilites.setVisibility(View.GONE);
+                            llHero.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
+
+
+                rvAbilites.setAdapter(adapter);
+                rvAbilites.setLayoutManager(new LinearLayoutManager(
+                        getContext(), LinearLayoutManager.VERTICAL, false));
+
+                rvAbilites.setVisibility(View.VISIBLE);
+                llHero.setVisibility(View.GONE);
+
+            }
+        });
 
         btnItems.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -275,7 +322,7 @@ public class BattleFragment extends Fragment {
             }
         });
 
-        // [END buttons_click_listeners]
+        // endregion [END buttons_click_listeners]
     }
 
     /**
@@ -409,34 +456,6 @@ public class BattleFragment extends Fragment {
             message = "=========You Lose=========";
         }
 
-        /*// Creamos una referencia al documento que almacena los heroes del usuario a traves del
-        // path del documento de la coleccion users.
-        DocumentReference docRef = db.collection("users").document(usrUID);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()){
-                    DocumentSnapshot doc = task.getResult();
-                    if (doc.exists()) {
-                        // Convertimos el documento en un listado de Map<String, Object>, que cada
-                        // uno representara un listado de los atributos de cada uno de los heroes.
-                        List<Map<String, Object>> dbHeroes = (List<Map<String, Object>>) doc.get("heroes");
-
-                        Map<String, Object> heroDoc = new HashMap<>();
-
-                        List<Hero> heroMap = new ArrayList<>();
-                        heroMap.add(hero);
-
-                        heroDoc.put("heroes",heroMap);
-
-                        dbHeroes.set(pos, heroDoc);
-
-                        Log.i(this.getClass().getName(), dbHeroes.toString());
-                    }
-                }
-            }
-        });*/
-
         showAlertDialog(message);
 
         // Agregamos el mensaje al Log de la partida y movemos el scroll al final
@@ -463,6 +482,8 @@ public class BattleFragment extends Fragment {
         pbHeroLP = v.findViewById(R.id.pbHeroLP);
         pbHeroMP = v.findViewById(R.id.pbHeroMP);
         scroll = v.findViewById(R.id.scroll);
+        rvAbilites = v.findViewById(R.id.rvAbilities);
+        llHero = v.findViewById(R.id.llHero);
 
         // Recibimos los argumentos del Fragment para recibir al heroe y al enemigo/
         Bundle b = getArguments();
@@ -473,5 +494,48 @@ public class BattleFragment extends Fragment {
 
         // Devolvemos la vista.
         return v;
+    }
+
+    @Override
+    public void onAbilityClick(Ability a) {
+        switch (a.getEffectType()) {
+            case REGEN:
+                String[] effect = a.getEffect().split("\\+");
+                if (effect[0].equalsIgnoreCase("LP")){
+                    hero.setLp(hero.getLp()+ Integer.parseInt(effect[1]));
+                    if (hero.getMp() < ((Active)a).getCost()){
+                        Toast.makeText(getContext(), "Not enough MP", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), a.getAbility(), Toast.LENGTH_SHORT).show();
+                        hero.setMp(hero.getMp()- ((Active)a).getCost());
+
+                        // Realizamos de nuevo la comprobacion del SDK y realizamos la asignacion correspondiente.
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            pbHeroLP.setProgress(hero.getLp(), true);
+                        } else
+                            pbHeroLP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    pbHeroLP.setProgress(hero.getLp());
+                                }
+                        });
+
+                        // Realizamos de nuevo la comprobacion del SDK y realizamos la asignacion correspondiente.
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            pbHeroMP.setProgress(hero.getMp(), true);
+                        } else
+                            pbHeroMP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    pbHeroMP.setProgress(hero.getLp());
+                                }
+                            });
+                        playTurn();
+                    }
+                }
+                break;case STATUS_UP:break;case DMG:break; default:
+        }
+
+
     }
 }

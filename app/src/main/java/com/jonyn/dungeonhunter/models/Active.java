@@ -9,8 +9,10 @@ public class Active extends Ability{
     public Active(){}
 
     // Constructor con parametros.
-    public Active(String ability, String definition, int cost, AbilityType abilityType) {
-        super(ability, definition, abilityType);
+    public Active(String ability, String definition, String effect, int cost,
+                  AbilityType abilityType, EffectType effectType) {
+
+        super(ability, definition, effect, abilityType, effectType);
         this.cost = cost;
     }
 

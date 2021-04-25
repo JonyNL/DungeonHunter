@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.jonyn.dungeonhunter.DbUtils;
 import com.jonyn.dungeonhunter.R;
 import com.jonyn.dungeonhunter.models.Hero;
@@ -35,7 +34,6 @@ import static com.jonyn.dungeonhunter.DbUtils.HERO_POS;
 public class HeroSelectFragment extends Fragment {
     public static final String TAG = "HERO_SELECT_FRAGMENT";
 
-    private FirebaseFirestore db;
     private String usrUID;
 
     // Elementos del Layout
@@ -47,7 +45,7 @@ public class HeroSelectFragment extends Fragment {
     private List<Hero> heroes = new ArrayList<>(3);
 
     // Constructor vacio
-    public HeroSelectFragment() {};
+    public HeroSelectFragment() {}
 
     /**
      * Metodo para crear una instancia de HeroSelectFragment desde MainFragment.
@@ -92,7 +90,7 @@ public class HeroSelectFragment extends Fragment {
         // Recibimos el listado de heroes desde la clase DbUtils, que ya los debe haber cargado y
         // actualizamos el texto de los botones de heroes
         heroes = DbUtils.getHeroes();
-        updateButtonMsg();
+        updateButtonsMsg();
 
         // Creamos un listener que asinaremos a los botones de los heroes
         View.OnClickListener listener = new View.OnClickListener() {
@@ -131,7 +129,6 @@ public class HeroSelectFragment extends Fragment {
         // Recibimos los argumentos del fragment y asignamos el UID del usuario
         Bundle b = getArguments();
         usrUID = b.getString(FB_USER_UID);
-        db = FirebaseFirestore.getInstance();
 
         // Comprobamos si aparte del usrUID recibimos parametros para un nuevo heroe, en cuyo caso
         // debemos agregarlo al listado
@@ -172,8 +169,7 @@ public class HeroSelectFragment extends Fragment {
      * @param pos Posicion en la lista del heroe seleccionado
      * */
     private void checkButtonHero(int pos) {
-        if (!heroes.isEmpty() && heroes.size() >= pos+1 && heroes.get(pos) != null){
-            // TODO: Implementar fragment de mazmorra y lanzarlo
+        if (heroes.get(pos) != null && !heroes.isEmpty() && heroes.size() >= pos+1){
 
             FragmentManager manager = getFragmentManager();
 
@@ -207,7 +203,7 @@ public class HeroSelectFragment extends Fragment {
      * Metodo que actualiza el texto de los botones de los heroes
      *
      * */
-    void updateButtonMsg(){
+    void updateButtonsMsg(){
         // Comprobamos si el usuario tiene heroes, y asignamos su nombre al boton
         // que le corresponde.
         if (!heroes.isEmpty()) {

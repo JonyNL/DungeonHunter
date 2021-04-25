@@ -12,11 +12,9 @@ import android.widget.Spinner;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.jonyn.dungeonhunter.R;
 import com.jonyn.dungeonhunter.models.Hero;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,7 +30,6 @@ public class NewHeroFragment extends Fragment {
 
     private String usrUID;
     private int heroPos;
-    private FirebaseFirestore db;
 
     private EditText etHeroName;
     private Spinner spClasses;
@@ -103,7 +100,6 @@ public class NewHeroFragment extends Fragment {
         Bundle b = getArguments();
         usrUID = b.getString(FB_USER_UID);
         heroPos = b.getInt(HERO_POS, -1);
-        db = FirebaseFirestore.getInstance();
 
         etHeroName = v.findViewById(R.id.etHeroName);
         spClasses = v.findViewById(R.id.spClasses);

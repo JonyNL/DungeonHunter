@@ -1,8 +1,9 @@
 package com.jonyn.dungeonhunter.models;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public abstract class Ability {
+public abstract class Ability implements Serializable {
 
     public enum AbilityType {
         ACTIVE,
@@ -14,19 +15,35 @@ public abstract class Ability {
         }
     }
 
+    public enum EffectType {
+        REGEN,
+        DMG,
+        STATUS_UP;
+
+
+        public static String[] getNames(Class<? extends Enum<?>> e) {
+            return Arrays.toString(e.getEnumConstants())
+                    .replaceAll("^.|.$", "").split(", ");
+        }
+    }
+
     // Variables heredables de la clase.
     protected String ability;
     protected String definition;
+    protected String effect;
     protected AbilityType abilityType;
+    protected EffectType effectType;
 
     // Constructor sin parametros
     public Ability(){}
 
     // Constructor con parametros.
-    public Ability(String ability, String definition, AbilityType abilityType){
+    public Ability(String ability, String definition, String effect, AbilityType abilityType, EffectType effectType){
         this.ability = ability;
         this.definition = definition;
+        this.effect = effect;
         this.abilityType = abilityType;
+        this.effectType = effectType;
     }
 
     /** GETTERS Y SETTERS */
@@ -40,5 +57,13 @@ public abstract class Ability {
 
     public AbilityType getAbilityType() {
         return abilityType;
+    }
+
+    public String getEffect() {
+        return effect;
+    }
+
+    public EffectType getEffectType() {
+        return effectType;
     }
 }

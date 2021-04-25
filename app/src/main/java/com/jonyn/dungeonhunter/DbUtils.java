@@ -1,10 +1,14 @@
 package com.jonyn.dungeonhunter;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.util.Log;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -13,7 +17,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.jonyn.dungeonhunter.fragments.HeroSelectFragment;
 import com.jonyn.dungeonhunter.models.Ability;
+import com.jonyn.dungeonhunter.models.Active;
 import com.jonyn.dungeonhunter.models.Enemy;
 import com.jonyn.dungeonhunter.models.Hero;
 import com.jonyn.dungeonhunter.models.Item;
@@ -50,6 +56,8 @@ public class DbUtils {
     private static List<Hero> heroes = new ArrayList<>(3);
     private static List<Enemy> enemies = new ArrayList<>();
 
+    private static boolean loadingData = true;
+
     /**
      * Metodo para cargar los heroes del usuario al listado local.
      *
@@ -62,6 +70,14 @@ public class DbUtils {
         heroes.add(null);
         heroes.add(null);
         heroes.add(null);
+
+        // Creamos un ProgressDialog para indicar que se estan cargando elementos desde Firebase
+        final ProgressDialog dialog = new ProgressDialog(context);
+        //ProgressDialog.show(context, "Loading", "Loading");
+        dialog.setTitle("Loading data");
+        dialog.setCancelable(false);
+        dialog.show();
+        loadingData = true;
 
         // Creamos una referencia al documento que almacena los heroes del usuario a traves del
         // path del documento de la coleccion users.
@@ -102,7 +118,7 @@ public class DbUtils {
                                 int maxMp = ((Long) element.get("maxMp")).intValue();
 
                                 List<Item> inventory = getDBItemList((List<Map<String, Object>>) element.get("inventory"));
-                                List<Ability> actives = (List<Ability>) element.get("actives");
+                                List<Ability> actives = getDBActivesList((List<Map<String, Object>>) element.get("actives"));
                                 List<Ability> passives = (List<Ability>) element.get("passives");
                                 Weapon weapon;
                                 Map weaponMap = (Map) element.get("weapon");
@@ -160,13 +176,20 @@ public class DbUtils {
                         Log.i(TAG, "No Hero list document exists.");
 
                     }
+
+                    loadingData = false;
+                    dialog.dismiss();
                 } else {
                     // Si da un error la task, lo informamos con Toast y mostramos el error en el log
                     Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
                     Log.i(TAG, "Task error: " + task.getException());
+
+                    loadingData = false;
+                    dialog.dismiss();
                 }
             }
         });
+
 
     }
     /**
@@ -200,7 +223,8 @@ public class DbUtils {
                                 enemy = new Enemy(name, actives ,passives, Enemy.Types.DEMON,
                                         strength, defense, agility, luck);
                                 break;
-                            case "HUMAN":enemy = new Enemy(name, actives ,passives, Enemy.Types.HUMAN,
+                            case "HUMAN":
+                                enemy = new Enemy(name, actives ,passives, Enemy.Types.HUMAN,
                                     strength, defense, agility, luck);
                                 break;
                             default: enemy = null;
@@ -251,6 +275,41 @@ public class DbUtils {
     }
 
     /**
+     * Metodo para parsear los items del inventario recogidos de la BBDD.
+     *
+     * @param dbActives Listado de habilidades recibido de la BBDD.
+     * @return listado de objetos Item parseados.
+     * */
+    private static List<Ability> getDBActivesList(List<Map<String, Object>> dbActives) {
+        List<Ability> actives = new ArrayList<>();
+
+        for (Map<String, Object> element: dbActives) {
+            String definition = (String) element.get("definition");
+            String effect = (String) element.get("effect");
+            String ability = (String) element.get("ability");
+            int cost = ((Long) element.get("cost")).intValue();
+            Ability.EffectType effectType;
+            switch ((String)element.get("EffectType")){
+                case "REGEN":
+                    effectType = Ability.EffectType.REGEN;
+                    break;
+                case "DMG":
+                    effectType = Ability.EffectType.DMG;
+                    break;
+                case "STATUS_UP":
+                    effectType = Ability.EffectType.STATUS_UP;
+                    break;
+                default:effectType = null;
+            }
+
+            actives.add(new Active(
+                    ability, definition, effect, cost, Ability.AbilityType.ACTIVE, effectType));
+        }
+
+        return actives;
+    }
+
+    /**
      * Metodo para actualizar el listado de heroes del usuario.
      *
      * @param usrUID UID del usuario logueado.
@@ -262,16 +321,35 @@ public class DbUtils {
     }
 
     /**
+     * Metodo para modificar un heroe en una posicion concreta.
+     *
+     * @param pos Posicion del heroe en la lista.
+     * @param hero Heroe a insertar en la lista.
+     * */
+    public static void updateHeroPos(int pos, Hero hero){
+        heroes.set(pos, hero);
+    }
+
+    /**
+     * Metodo para vaciar la lista local de heroes
+     *
+     * */
+    public static void clearHeroList(){
+        heroes.clear();
+    }
+
+    /**
      * Metodo para agregar un enemigo a la BBDD.
      *
      * @param name Nombre del enemigo.
      * @param type Tipo de enemigo.
      * */
     public static void addEnemy(String name, Enemy.Types type){
-
+        // Creamos un Map que guarde los atributos del enemigo
         Map<String, Object> enemyDoc = new HashMap<>();
         Enemy enemy = new Enemy(name, type);
         enemyDoc.put(enemy.getName(), enemy);
+        // Dependiendo del tipo de enemigo, lo guardaremos en un documento u otro
         switch (enemy.getType()){
             case DEMON:
                 db.collection("enemies")
@@ -282,16 +360,6 @@ public class DbUtils {
                         .document("humans").set(enemyDoc);
                 break;
         }
-    }
-
-    /**
-     * Metodo para modificar un heroe en una posicion concreta.
-     *
-     * @param pos Posicion del heroe en la lista.
-     * @param hero Heroe a insertar en la lista.
-     * */
-    public static void updateHeroPos(int pos, Hero hero){
-        heroes.set(pos, hero);
     }
 
     /**
@@ -311,4 +379,17 @@ public class DbUtils {
     public static Enemy getEnemy(){
         return enemies.get(0);
     }
+
+    public static void loadFragment(FragmentManager manager, Fragment fragment){
+
+            // A traves del FragmentManager realizamos la transaccion
+            String newFragment = fragment.getClass().getName();
+            manager.beginTransaction()
+                .replace(R.id.container, fragment, newFragment)
+                .commit();
+
+    }
+
 }
+
+
