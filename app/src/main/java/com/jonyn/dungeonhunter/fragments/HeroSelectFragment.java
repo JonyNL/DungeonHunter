@@ -30,7 +30,7 @@ import static com.jonyn.dungeonhunter.DbUtils.HERO_POS;
 /**
  * Fragment seleccion de heroe
  *
- * */
+ */
 public class HeroSelectFragment extends Fragment {
     public static final String TAG = "HERO_SELECT_FRAGMENT";
 
@@ -169,34 +169,26 @@ public class HeroSelectFragment extends Fragment {
      * @param pos Posicion en la lista del heroe seleccionado
      * */
     private void checkButtonHero(int pos) {
+        FragmentManager manager = getFragmentManager();
+        assert manager != null;
         if (heroes.get(pos) != null && !heroes.isEmpty() && heroes.size() >= pos+1){
-
-            FragmentManager manager = getFragmentManager();
-
             // Creamos un DungeonFragment pasandole como parametros el usrUID, heroe y su posicion
             // en la lista.
             Fragment fragment = DungeonFragment.newInstance(usrUID, pos, heroes.get(pos));
 
             // A traves del FragmentManager que guardamos antes, realizamos la transaccion
             // del fragment.
-            String newFragment = fragment.getClass().getName();
-            manager.beginTransaction()
-                    .replace(R.id.container, fragment, newFragment)
-                    .commit();
+            DbUtils.loadFragment(manager, fragment);
         } else {
             Toast.makeText(getContext(), "No hero in Slot", Toast.LENGTH_SHORT).show();
 
-            FragmentManager manager = getFragmentManager();
 
             // Creamos un BattleFragment pasandole como parametros el heroe y el enemigo.
             Fragment fragment = NewHeroFragment.newInstance(usrUID, pos);
 
             // A traves del FragmentManager que guardamos antes, realizamos la transaccion
             // del fragment.
-            String newFragment = fragment.getClass().getName();
-            manager.beginTransaction()
-                    .replace(R.id.container, fragment, newFragment)
-                    .commit();
+            DbUtils.loadFragment(manager, fragment);
         }
     }
     /**

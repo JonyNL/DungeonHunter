@@ -1,9 +1,14 @@
 package com.jonyn.dungeonhunter.models;
 
+import android.util.Log;
+
+import com.jonyn.dungeonhunter.DbUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Warrior extends Hero {
+    public static String TAG = "com.jonyn.dungeonhunter.models.WARRIOR";
 
     // Constructor sin parametros
     public Warrior(){}
@@ -26,8 +31,8 @@ public class Warrior extends Hero {
 
     // Constructor con un parametro.
     public Warrior(String name) {
-        super(name, 8, 5, 6, 8, new ArrayList<Ability>(),
-                new ArrayList<Ability>(), new ArrayList<Item>(),
+        super(name, 8, 5, 6, 8, new ArrayList<>(),
+                new ArrayList<>(), new ArrayList<>(),
                 new Sword("Wooden Sword", "Simple sword made of wood.",
                         100,  true, 10, Weapon.WeaponType.SWORD),
                 HeroClass.WARRIOR);
@@ -35,7 +40,38 @@ public class Warrior extends Hero {
 
     /** Metodos de utilidad */
     @Override
-    public int attack() {
-        return ((Sword) weapon).getDamage()+strength;
+    public String attack(Character enemy)
+    {
+        int hitValue = DbUtils.randomNumber(0, 100) + this.luck;
+        Log.i(TAG, Integer.toString(hitValue));
+
+        if (hitValue < 10) {
+            return (this.name + " tried to attack " + enemy.getName() +
+                    "but missed.\n----------------------------------------\n");
+
+        } else if (hitValue > 90) {
+            int hitDmg = (int) (((Sword)this.weapon).getDamage()*(DbUtils.randomNumber(0, 10)/10) +
+                    this.strength + 10 - (enemy.defense * .25));
+
+            enemy.setLp(enemy.getLp() - hitDmg);
+
+            return this.name + " attacked and dealt " + hitDmg + " critical damage to "
+                    + enemy.getName()+ ".\n----------------------------------------\n";
+        } else {
+            if (hitValue - (enemy.agility + enemy.luck) > 25) {
+                int hitDmg = (int)
+                        (((Sword)this.weapon).getDamage()*(DbUtils.randomNumber(0, 10)/10) +
+                        this.strength - (enemy.defense * .5));
+
+                enemy.setLp(enemy.getLp() - hitDmg);
+
+                return this.name + " attacked and dealt "+ hitDmg + " damage to "
+                        + enemy.getName()+ ".\n----------------------------------------\n";
+            } else {
+                return (this.name + " tried to attack " + enemy.getName() +
+                        "but missed.\n----------------------------------------\n");
+            }
+        }
+        //((Sword) weapon).getDamage()+strength;
     }
 }

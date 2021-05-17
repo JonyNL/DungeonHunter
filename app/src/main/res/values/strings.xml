@@ -1,20 +1,29 @@
 <resources>
-    <string name="app_name">DHGame</string>
+    <string name="app_name">Dungeon Hunter</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="attack">Attack</string>
     <string name="abilities">Abilities</string>
     <string name="items">Items</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="hero_select">Hero Select</string>
     <string name="slot">No Hero</string>
-    <string name="newhero">New Hero</string>
+    <string name="new_hero">New Hero</string>
     <string name="confirm">Confirm</string>
     <string name="heroName">Hero Name</string>
     <string name="no_user">No active user</string>
     <string name="hero_lvl">Level: %1$s</string>
     <string name="exp_value">%1$s/%2$s</string>
-
+    <string name="lp_stat">LP: %1$s / %2$s</string>
+    <string name="mp_stat">MP: %1$s / %2$s</string>
+    <string name="str_stat">Strength: %1$s</string>
+    <string name="intel_stat">Intelligence: %1$s</string>
+    <string name="def_stat">Defense: %1$s</string>
+    <string name="ag_stat">Agility: %1$s</string>
+    <string name="lck_stat">Luck: %1$s</string>
+    <string name="status">Status</string>
+    <string name="status_img_desc">An image of the hero</string>
+    <string name="returning">Return</string>
+    <string name="inventory">Bag</string>
+    <string name="hero_inventory">%1$s\'s inventory</string>
 </resources>

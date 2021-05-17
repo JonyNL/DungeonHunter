@@ -89,9 +89,19 @@ public abstract class Character implements Serializable {
         else this.lp = lp;
     }
 
+    public void recoverLp(int val){
+        lp+=val;
+        if (lp > maxLp)
+            lp = maxLp;
+    }
+
     // MaxMp
     public int getMaxMp() {
         return maxMp;
+    }
+
+    public void setMaxMp(int maxMp) {
+        this.maxMp = maxMp;
     }
 
     // Mp
@@ -101,6 +111,12 @@ public abstract class Character implements Serializable {
         else if (mp < 0)
             this.mp = 0;
         else this.mp = mp;
+    }
+
+    public void recoverMp(int val){
+        mp+=val;
+        if (mp > maxMp)
+            mp = maxMp;
     }
 
     public int getMp() {
@@ -159,9 +175,7 @@ public abstract class Character implements Serializable {
         this.lvl++;
     }
 
-    public int attack(){
-        return 0;
-    }
+    public abstract String attack(Character character);
 
     public void addPassive(Ability passive) {
         this.passives.add(passive);

@@ -12,6 +12,7 @@ import android.widget.Spinner;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.jonyn.dungeonhunter.DbUtils;
 import com.jonyn.dungeonhunter.R;
 import com.jonyn.dungeonhunter.models.Hero;
 
@@ -61,33 +62,21 @@ public class NewHeroFragment extends Fragment {
 
         List<String> classesList = Arrays.asList(Hero.HeroClass.getNames(Hero.HeroClass.class));
 
-        final ArrayAdapter<String> spAdapter = new ArrayAdapter<String>(getContext(),
+        final ArrayAdapter<String> spAdapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_item, classesList);
         spAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spClasses.setAdapter(spAdapter);
 
-        btnConfirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FragmentManager manager = getFragmentManager();
+        btnConfirm.setOnClickListener(v -> {
+            String name = etHeroName.getText().toString();
+            String hClass = spClasses.getSelectedItem().toString();
 
-                String name = etHeroName.getText().toString();
-                String hClass = spClasses.getSelectedItem().toString();
-
-                if (name.length() < 3){
-                    etHeroName.setError("Name must be 3 characters or more");
-                } else {
-
-                    // Creamos un HeroSelectFragment pasandole como parametros el usrID, heroPos, name y hClass.
-                    Fragment fragment = HeroSelectFragment.newInstance(usrUID, heroPos, name, hClass);
-
-                    // A traves del FragmentManager que guardamos antes, realizamos la transaccion
-                    // del fragment
-                    String newFragment = fragment.getClass().getName();
-                    manager.beginTransaction()
-                            .replace(R.id.container, fragment, newFragment)
-                            .commit();
-                }
+            if (name.length() < 3){
+                etHeroName.setError("Name must be 3 characters or more");
+            } else {
+                assert getFragmentManager() != null;
+                DbUtils.loadFragment(getFragmentManager(),
+                        HeroSelectFragment.newInstance(usrUID, heroPos, name, hClass));
             }
         });
     }
@@ -98,6 +87,7 @@ public class NewHeroFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_new_hero, container, false);
 
         Bundle b = getArguments();
+        assert b != null;
         usrUID = b.getString(FB_USER_UID);
         heroPos = b.getInt(HERO_POS, -1);
 

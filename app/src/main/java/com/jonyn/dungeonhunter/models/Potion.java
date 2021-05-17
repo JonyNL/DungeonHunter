@@ -4,7 +4,7 @@ public class Potion extends Consumable {
 
     // Enum con los diferentes tipos de pocion.
     public enum Types {
-        HEALTH_POTION,
+        LIFE_POTION,
         MANA_POTION,
         ELIXIR
     }
@@ -30,21 +30,5 @@ public class Potion extends Consumable {
 
     public int getValue() {
         return value;
-    }
-
-    /** Metodos de utilidad */
-    public void use(Hero hero, Types type){
-        switch (type){
-            case HEALTH_POTION:
-                hero.setLp(hero.getLp()+value);
-                break;
-            case MANA_POTION:
-                hero.setMp(hero.getMp()+value);
-                break;
-            case ELIXIR:
-                hero.setLp(hero.maxLp);
-                hero.setMp(hero.maxMp);
-                break;
-        }
     }
 }

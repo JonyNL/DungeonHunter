@@ -3,21 +3,17 @@ package com.jonyn.dungeonhunter;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.util.Log;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.jonyn.dungeonhunter.fragments.HeroSelectFragment;
 import com.jonyn.dungeonhunter.models.Ability;
 import com.jonyn.dungeonhunter.models.Active;
 import com.jonyn.dungeonhunter.models.Enemy;
@@ -34,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Posible clase para la gestion de la conexion con la BBDD.
@@ -57,6 +54,8 @@ public class DbUtils {
     private static List<Enemy> enemies = new ArrayList<>();
 
     private static boolean loadingData = true;
+    private static final int statsUp = 4;
+    private static final int defVal = 100;
 
     /**
      * Metodo para cargar los heroes del usuario al listado local.
@@ -67,9 +66,9 @@ public class DbUtils {
     public static void loadHeroList(final Context context, final String usrUID) {
 
         // Agregamos elementos null al listado para mantener el size en la cantidad deseada (3)
-        heroes.add(null);
-        heroes.add(null);
-        heroes.add(null);
+        do {
+            heroes.add(null);
+        } while (heroes.size()< 3);
 
         // Creamos un ProgressDialog para indicar que se estan cargando elementos desde Firebase
         final ProgressDialog dialog = new ProgressDialog(context);
@@ -167,6 +166,7 @@ public class DbUtils {
                                 }
                                 heroes.set(iterator++, h);
                             } catch (NullPointerException e) {
+                                e.printStackTrace();
                                 heroes.set(iterator++, null);
                             }
                         }
@@ -189,9 +189,8 @@ public class DbUtils {
                 }
             }
         });
-
-
     }
+
     /**
      * Metodo para cargar los enemigos de la base de datos al listado local.
      *
@@ -256,8 +255,8 @@ public class DbUtils {
             int value = ((Long) element.get("value")).intValue();
             Potion.Types type;
             switch ((String)element.get("type")){
-                case "HEALTH_POTION":
-                    type = Potion.Types.HEALTH_POTION;
+                case "LIFE_POTION":
+                    type = Potion.Types.LIFE_POTION;
                     break;
                 case "MANA_POTION":
                     type = Potion.Types.MANA_POTION;
@@ -289,7 +288,7 @@ public class DbUtils {
             String ability = (String) element.get("ability");
             int cost = ((Long) element.get("cost")).intValue();
             Ability.EffectType effectType;
-            switch ((String)element.get("EffectType")){
+            switch ((String)element.get("effectType")){
                 case "REGEN":
                     effectType = Ability.EffectType.REGEN;
                     break;
@@ -387,9 +386,60 @@ public class DbUtils {
             manager.beginTransaction()
                 .replace(R.id.container, fragment, newFragment)
                 .commit();
-
     }
 
+    public static String statusLvlUp(Hero hero) {
+        StringBuilder builder = new StringBuilder();
+        int ag = 0, def = 0, intel = 0, str = 0, lck = 0,
+            lp = defVal + hero.getLvl() * 20, mp = defVal + hero.getLvl() * 20;
+        for (int i = 0; i < statsUp; i++) {
+            switch(randomNumber(1, statsUp)){
+                case 1:
+                    hero.setAgility(hero.getAgility()+1);
+                    ag++;
+                    break;
+                case 2:
+                    hero.setDefense(hero.getDefense()+1);
+                    def++;
+                    break;
+                case 3:
+                    if (hero instanceof Wizard) {
+                        ((Wizard)hero).setIntelligence(((Wizard)hero).getIntelligence()+1);
+                        intel++;
+                    } else {
+                        hero.setStrength(hero.getStrength() + 1);
+                        str++;
+                    }
+                    break;
+                case 4:
+                    hero.setLuck(hero.getLuck()+1);
+                    lck++;
+                    break;
+            }
+        }
+        if (hero instanceof Wizard){
+            int extraLP = (lp/2), extraMP = (int)(mp*1.5);
+            hero.setMaxLp(hero.getMaxLp() + extraLP);
+            hero.setMaxMp(hero.getMaxMp() + extraMP);
+            builder.append("LP + " + extraLP + "\nMP + " + extraMP + "\nAgility + " + ag +
+                    "\nDefense + " + def +"\nIntelligence + " + intel + "\nLuck + " + lck);
+        }
+        else {
+            int extraLP = lp, extraMP = (int)(mp*.75);
+            hero.setMaxLp(hero.getMaxLp() + extraLP);
+            hero.setMaxMp(hero.getMaxMp() + extraMP);
+            builder.append("LP + " + extraLP + "\nMP + " + extraMP + "\nAgility + " + ag +
+                    "\nDefense + " + def + "\nStrength + " + str + "\nLuck + " + lck);
+        }
+        return builder.toString();
+    }
+
+    //// Generic Utils ////
+
+    public static int randomNumber(int min, int max){
+        Random rnd = new Random();
+        return rnd.nextInt(max-min+1)+min;
+    }
 }
 
 

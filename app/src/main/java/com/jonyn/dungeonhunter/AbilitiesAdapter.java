@@ -16,8 +16,8 @@ import java.util.List;
 public class AbilitiesAdapter extends RecyclerView.Adapter<AbilitiesAdapter.AbilitiesViewHolder>
     implements View.OnClickListener {
 
-    List<Ability> actives;
-    View.OnClickListener listener;
+    private final List<Ability> actives;
+    private View.OnClickListener listener;
 
     public AbilitiesAdapter(List<Ability> actives){
         this.actives = actives;
@@ -31,8 +31,7 @@ public class AbilitiesAdapter extends RecyclerView.Adapter<AbilitiesAdapter.Abil
 
         itemView.setOnClickListener(listener);
 
-        AbilitiesViewHolder avh = new AbilitiesViewHolder(itemView);
-        return avh;
+        return new AbilitiesViewHolder(itemView);
     }
 
     public void setListener(View.OnClickListener listener) {
@@ -56,10 +55,10 @@ public class AbilitiesAdapter extends RecyclerView.Adapter<AbilitiesAdapter.Abil
         return actives.size();
     }
 
-    class AbilitiesViewHolder extends RecyclerView.ViewHolder {
+    static class AbilitiesViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView tvAbility;
-        private TextView tvCost;
+        private final TextView tvAbility;
+        private final TextView tvCost;
 
         public AbilitiesViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -74,3 +73,10 @@ public class AbilitiesAdapter extends RecyclerView.Adapter<AbilitiesAdapter.Abil
         }
     }
 }
+
+
+
+
+
+
+

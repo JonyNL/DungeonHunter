@@ -2,11 +2,9 @@ package com.jonyn.dungeonhunter.fragments;
 
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,48 +12,39 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.jonyn.dungeonhunter.DbUtils;
 import com.jonyn.dungeonhunter.R;
 import com.jonyn.dungeonhunter.models.Enemy;
 import com.jonyn.dungeonhunter.models.Hero;
 
-import java.util.List;
-import java.util.Map;
-
 import static com.jonyn.dungeonhunter.DbUtils.FB_USER_UID;
 import static com.jonyn.dungeonhunter.DbUtils.HERO;
 import static com.jonyn.dungeonhunter.DbUtils.HERO_POS;
-import static com.jonyn.dungeonhunter.DbUtils.updateDbHeroList;
-import static com.jonyn.dungeonhunter.DbUtils.updateHeroPos;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link DungeonFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * fragment que representa la pantalla principal una vez seleccionado un heroe
+ *
  */
 public class DungeonFragment extends Fragment {
     public static final String TAG = "DUNGEON_FRAGMENT";
 
+    // Elementos comunes recibidos del anterior fragment
     private String usrUID;
     private int heroPos;
     private Hero hero;
     private Enemy enemy;
 
+    // Elementos de la vista
     private TextView tvHeroName;
     private TextView tvHeroLvl;
     private TextView tvHeroExp;
     private Button btnDLeft;
     private Button btnDFront;
     private Button btnDRight;
-    private Button btnMenu1;
-    private Button btnMenu2;
-    private Button btnMenu3;
-    private Button btnMenu4;
+    private Button btnMenuStats;
+    private Button btnMenuBag;
+    private Button btnEnemies;
+    private Button btnSettings;
 
     public DungeonFragment() {
         // Required empty public constructor
@@ -82,82 +71,99 @@ public class DungeonFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
+        // Asignamos el texto correspondiente a los elementos de la vista
         tvHeroName.setText(hero.getName());
         tvHeroLvl.setText(getString(R.string.hero_lvl, String.valueOf(hero.getLvl())));
         tvHeroExp.setText(getString(R.string.exp_value,
                 String.valueOf(hero.getExp()), String.valueOf(hero.getReqExp())));
 
-        View.OnClickListener listener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO implementar el onClick
-                switch (v.getId()){
-                    case R.id.btnDLeft:case R.id.btnDFront:case R.id.btnDRight:
-                        FragmentManager manager = getFragmentManager();
+        // Creamos el listener a agregar a los botones.
+        View.OnClickListener listener = v -> {
+            // Asignamos el FragmentManager a una variable para usarlo mas adelante.
+            // comprobamos que no sea null y realizamos una accion dependiendo del ID de la vista
+            FragmentManager manager = getFragmentManager();
+            assert manager != null;
+            switch (v.getId()){
+                case R.id.btnDLeft:case R.id.btnDFront:case R.id.btnDRight:
 
-                        enemy = DbUtils.getEnemy();
+                    // Obtenemos un enemigo desde DbUtils y lo asignamos a la variable local.
+                    enemy = DbUtils.getEnemy();
 
-                        BattleFragment fragment;
-                        if (enemy!= null){
-                            enemy.setLp(enemy.getMaxLp());
-                            fragment = BattleFragment.newInstance(usrUID, heroPos, hero, enemy);
-                        } else {
-                            fragment = BattleFragment
-                                    .newInstance(usrUID, heroPos, hero, new Enemy("Kappa", Enemy.Types.DEMON));
-                        }
+                    // Creamos una variable BattleFragment y dependiendo de si el enemigo es o no 
+                    // null lo lanzamos usando esa variable o creamos un enemigo nuevo.
+                    BattleFragment bFragment;
+                    if (enemy!= null){
+                        enemy.setLp(enemy.getMaxLp());
+                        bFragment = BattleFragment.newInstance(usrUID, heroPos, hero, enemy);
+                    } else {
+                        bFragment = BattleFragment
+                                .newInstance(usrUID, heroPos, hero, new Enemy("Kappa", Enemy.Types.DEMON));
+                    }
 
-                        Log.i(TAG, enemy.toString());
+                    // Cargamos el fragment desde DbUtils
+                    DbUtils.loadFragment(manager, bFragment);
+                    break;
+                case R.id.btnMenuStatus:
+                    // Creamos un StatusFragment y la lanzamos a traves de DbUtils.
+                    StatusFragment sFragment = StatusFragment.newInstance(usrUID, heroPos, hero);
+                    DbUtils.loadFragment(manager, sFragment);
+                    break;
+                case R.id.btnMenuBag:
+                    // Creamos un InventoryFragment y la lanzamos a traves de DbUtils.
+                    InventoryFragment iFragment = InventoryFragment.newInstance(usrUID, heroPos, hero);
+                    DbUtils.loadFragment(manager, iFragment);
+                    break;
 
-                        String newFragment = fragment.getClass().getName();
-
-                        manager.beginTransaction()
-                                .replace(R.id.container, fragment, newFragment)
-                                .commit();
-                        break;
-                    case R.id.btnMenu1: case R.id.btnMenu2: case R.id.btnMenu3:
-                    case R.id.btnMenu4:
-                        Toast.makeText(getContext(), getResources().getResourceEntryName(v.getId()),
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                }
+                    // TODO Crear e implementar fragments para el resto de opciones
+                case R.id.btnEnemies: case R.id.btnSettings:
+                    Toast.makeText(getContext(), getResources().getResourceEntryName(v.getId()),
+                            Toast.LENGTH_SHORT).show();
+                    break;
             }
         };
 
+        // Asignamos el listener a los botones
         btnDLeft.setOnClickListener(listener);
         btnDFront.setOnClickListener(listener);
         btnDRight.setOnClickListener(listener);
-        btnMenu1.setOnClickListener(listener);
-        btnMenu2.setOnClickListener(listener);
-        btnMenu3.setOnClickListener(listener);
-        btnMenu4.setOnClickListener(listener);
+        btnMenuStats.setOnClickListener(listener);
+        btnMenuBag.setOnClickListener(listener);
+        btnEnemies.setOnClickListener(listener);
+        btnSettings.setOnClickListener(listener);
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Inflamos la vista del fragment y lo asignamos a una variable
         View v = inflater.inflate(R.layout.fragment_dungeon, container, false);
 
+        // Comprobamos que el Bundle no sea nulo y asignamos lo que necesitamos
         Bundle b = getArguments();
+        assert b != null;
         usrUID = b.getString(FB_USER_UID);
         heroPos = b.getInt(HERO_POS);
         hero = (Hero) b.getSerializable(HERO);
         enemy = null;
-        //db = FirebaseFirestore.getInstance();
 
+        // Actualizamos la lista de usuarios en la base de datos, para que en caso de haber
+        // terminado una batalla se guarden los cambios en el heroe
         DbUtils.updateDbHeroList(usrUID);
 
+        // Buscamos y asignamos las vistas a sus elementos locales
         tvHeroName = v.findViewById(R.id.tvHeroName);
         tvHeroLvl = v.findViewById(R.id.tvHeroLvl);
         tvHeroExp = v.findViewById(R.id.tvHeroExp);
         btnDLeft = v.findViewById(R.id.btnDLeft);
         btnDFront = v.findViewById(R.id.btnDFront);
         btnDRight = v.findViewById(R.id.btnDRight);
-        btnMenu1 = v.findViewById(R.id.btnMenu1);
-        btnMenu2 = v.findViewById(R.id.btnMenu2);
-        btnMenu3 = v.findViewById(R.id.btnMenu3);
-        btnMenu4 = v.findViewById(R.id.btnMenu4);
+        btnMenuStats = v.findViewById(R.id.btnMenuStatus);
+        btnMenuBag = v.findViewById(R.id.btnMenuBag);
+        btnEnemies = v.findViewById(R.id.btnEnemies);
+        btnSettings = v.findViewById(R.id.btnSettings);
 
+        // Devolvemos la vista
         return v;
     }
 

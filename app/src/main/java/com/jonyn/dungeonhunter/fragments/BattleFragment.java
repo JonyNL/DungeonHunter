@@ -1,51 +1,35 @@
 package com.jonyn.dungeonhunter.fragments;
 
-import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.Layout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.jonyn.dungeonhunter.AbilitiesAdapter;
+import com.jonyn.dungeonhunter.DbUtils;
 import com.jonyn.dungeonhunter.IAbilityListener;
 import com.jonyn.dungeonhunter.R;
 import com.jonyn.dungeonhunter.models.Ability;
 import com.jonyn.dungeonhunter.models.Active;
-import com.jonyn.dungeonhunter.models.Consumable;
 import com.jonyn.dungeonhunter.models.Enemy;
 import com.jonyn.dungeonhunter.models.Hero;
-import com.jonyn.dungeonhunter.models.Item;
 import com.jonyn.dungeonhunter.models.Potion;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 import static com.jonyn.dungeonhunter.DbUtils.FB_USER_UID;
 import static com.jonyn.dungeonhunter.DbUtils.HERO_POS;
@@ -72,7 +56,7 @@ public class BattleFragment extends Fragment implements IAbilityListener {
     private ProgressBar pbHeroLP;
     private ProgressBar pbHeroMP;
     private ScrollView scroll;
-    private RecyclerView rvAbilites;
+    private RecyclerView rvAbilities;
     private LinearLayout llHero;
 
 
@@ -121,12 +105,18 @@ public class BattleFragment extends Fragment implements IAbilityListener {
             hero.addActive(new Active("Healing", "Heals 30 LP", "LP+30",
                 10, Ability.AbilityType.ACTIVE, Ability.EffectType.REGEN));
 
-        if (hero.getInventory().isEmpty())
-            hero.getInventory().add(new Potion("Health Potion",
-                "Potions that restores 20 points of your life points",
-                5, "LP +20", Potion.Types.HEALTH_POTION, 20));
-
-        /** Establecemos el valor maximo y actual de las barras que representan la salud y la
+        if (hero.getInventory().isEmpty()) {
+            hero.getInventory().add(new Potion("Life Potion",
+                    "Potion that restores 20 points of your life points",
+                    5, "LP+20", Potion.Types.LIFE_POTION, 20));
+            hero.getInventory().add(new Potion("Elixir",
+                    "Elixir that fills your LP and MP",
+                    5, "LP/MP MAX", Potion.Types.ELIXIR, 0));
+            hero.getInventory().add(new Potion("Mana Potion",
+                    "Potion that restores 20 points of your mana points",
+                    5, "MP+20", Potion.Types.MANA_POTION, 20));
+        }
+        /* Establecemos el valor maximo y actual de las barras que representan la salud y la
          *  energia de los personajes, tanto el heroe como el enemigo.*/
 
         // region [START progress_bars_assignment]
@@ -135,61 +125,25 @@ public class BattleFragment extends Fragment implements IAbilityListener {
 
         // Comprobamos si el SDK de adnroid es el 24 para realizar la asignacion del progreso de la
         // barra a traves del nuevo metodo.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            pbHeroLP.setProgress(hero.getLp(), true);
-        else
-            //En caso contrario, tendremos que usar el metodo tradicional.
-            pbHeroLP.post(new Runnable() {
-                @Override
-                public void run() {
-                    pbHeroLP.setProgress(hero.getLp());
-                }
-            });
+        updateHeroLP();
 
         // Establecemos el valor maximo de la energia del heroe.
         pbHeroMP.setMax(hero.getMaxMp());
 
         // Realizamos la misma comprobacion que con la vida.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            pbHeroMP.setProgress(hero.getMp(), true);
-        else
-            pbHeroMP.post(new Runnable() {
-                @Override
-                public void run() {
-                    pbHeroMP.setProgress(hero.getMp());
-                }
-            });
-
-        //enemy = new Enemy("Kappa", Enemy.Types.DEMON);
+        updateHeroMP();
 
         // Establecemos la vida maxima del enemigo en la barra de progreso que la representa.
         pbEnemyLP.setMax(enemy.getMaxLp());
 
         // Realizaremos la misma comprobacion del SDK y las mismas operaciones.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            pbEnemyLP.setProgress(enemy.getMaxLp(), true);
-        else
-            pbEnemyLP.post(new Runnable() {
-                @Override
-                public void run() {
-                    pbEnemyLP.setProgress(enemy.getMaxLp());
-                }
-            });
+        updateEnemyLP();
 
         // Asignamos la energia maxima del enemigo a la barra de progreso que la representa.
         pbEnemyMP.setMax(enemy.getMaxMp());
 
         // Realizaremos la misma comprobacion del SDK y las mismas operaciones.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            pbEnemyMP.setProgress(enemy.getMaxMp(),true);
-        else {
-            pbEnemyMP.post(new Runnable() {
-                @Override
-                public void run() {
-                    pbEnemyMP.setProgress(enemy.getMaxMp());
-                }
-            });
-        }
+        updateEnemyMP();
         // endregion [END progress_bars_assignment]
 
         // Vamos describiendo los acontecimientos en un TextView, encabezado por este texto
@@ -201,125 +155,70 @@ public class BattleFragment extends Fragment implements IAbilityListener {
 
         // Establecemos los listeners a los botones para realizar las acciones correspondientes.
         // region [START buttons_click_listeners]
-        btnAttack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        btnAttack.setOnClickListener(v -> {
 
-                // Recogemos el valor del ataque del heroe y lo guardamos en una variable.
-                int heroDmg = hero.attack();
+            // Recogemos el valor del ataque del heroe y lo guardamos en una variable.
+            String attackRes = hero.attack(enemy);
 
-                // Reducimos la vida del enemigo en un valor igual al del ataque del heroe.
-                enemy.setLp(enemy.getLp()-heroDmg);
+            // Agregamos al TextView que muestra el progreso del juego el resultado del ataque.
+            tvLog.append(attackRes);
+            scroll.fullScroll(View.FOCUS_DOWN);
 
-                // Realizamos de nuevo la comprobacion del SDK y realizamos la asignacion correspondiente.
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    pbEnemyLP.setProgress(enemy.getLp(), true);
-                } else
-                    pbEnemyLP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        pbEnemyLP.setProgress(enemy.getLp());
-                    }
-                });
+            // Reducimos la vida del enemigo en un valor igual al del ataque del heroe.
+            //enemy.setLp(enemy.getLp()-heroDmg);
 
-                // Agregamos al TextView que muestra el progreso del juego el resultado del ataque.
-                tvLog.append(hero.getName() + " attacked and dealt " + heroDmg + " damage to "
-                        + enemy.getName()+ ".\n----------------------------------------\n");
-                scroll.fullScroll(View.FOCUS_DOWN);
+            // Actualizamos la barra de salud del enemigo.
+            updateEnemyLP();
 
-                // Comprobamos si ambos personajes aun tienen vida.
-                if (hero.getLp()>0 && enemy.getLp()>0){
+            // Comprobamos si ambos personajes aun tienen vida.
+            if (hero.getLp()>0 && enemy.getLp()>0){
 
-                    // En caso afirmativo, jugamos el turno y llamamos a la jugada del enemigo
-                    playTurn();
-                    enemyPlay();
-                } else {
+                // En caso afirmativo, jugamos el turno y llamamos a la jugada del enemigo
+                playTurn();
+                enemyPlay();
+            } else {
 
-                    // En caso contrario, llamamos al metodo gameEnd.
-                    gameEnd();
+                // En caso contrario, llamamos al metodo gameEnd.
+                gameEnd();
+            }
+
+        });
+
+        btnAbilities.setOnClickListener(v -> {
+            // Creamos un adaptador para el listado de habilidades
+            AbilitiesAdapter adapter = new AbilitiesAdapter(hero.getActives());
+
+            // Agregamos un listener al adaptador para poder seleccionar las habilidades
+            adapter.setListener(v1 -> {
+                if (listener!= null){
+                    // Si el listener no es nulo, ejecutamos el metodo onAbilityClick()
+                    listener.onAbilityClick(hero.getActives().get(rvAbilities.getChildAdapterPosition(v1)));
+
+                    // Escondemos el listado de habilidades y mostramos otra vez el menu de acciones
+                    rvAbilities.setVisibility(View.GONE);
+                    llHero.setVisibility(View.VISIBLE);
                 }
+            });
 
-            }
-        });
-        //TODO implement btnAbilities.onClick()
-        btnAbilities.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AbilitiesAdapter adapter = new AbilitiesAdapter(hero.getActives());
+            // Asignamos el adaptador al RecyclerView y le asignamos el LayoutManager
+            rvAbilities.setAdapter(adapter);
+            rvAbilities.setLayoutManager(new LinearLayoutManager(
+                    getContext(), LinearLayoutManager.VERTICAL, false));
 
+            // Escondemos el menu de acciones y mostramos el listado de habilidades
+            rvAbilities.setVisibility(View.VISIBLE);
+            llHero.setVisibility(View.GONE);
 
-                adapter.setListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (listener!= null){
-                            listener.onAbilityClick(hero.getActives().get(rvAbilites.getChildAdapterPosition(v)));
-
-                            rvAbilites.setVisibility(View.GONE);
-                            llHero.setVisibility(View.VISIBLE);
-                        }
-                    }
-                });
-
-
-                rvAbilites.setAdapter(adapter);
-                rvAbilites.setLayoutManager(new LinearLayoutManager(
-                        getContext(), LinearLayoutManager.VERTICAL, false));
-
-                rvAbilites.setVisibility(View.VISIBLE);
-                llHero.setVisibility(View.GONE);
-
-            }
         });
 
-        btnItems.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        btnItems.setOnClickListener(v -> {
 
-                // Creamos una lista de items en la que guardaremos el inventario del heroe.
-                List<Item> inventory = hero.getInventory();
+            // Usamos el objeto desde el inventario del heroe
+            hero.useItem(0);
 
-                // Comprobamos si el inventario tiene objetos dentro.
-                if (!inventory.isEmpty()){
-
-                    // Creamos un Consumable asignandole el objeto que vamos a usar.
-                    Consumable c = (Consumable) inventory.get(0);
-
-                    // Reducimos la cantidad del objeto utilizado en 1.
-                    ((Consumable) inventory.get(0)).removeQuantity(1);
-
-                    // Usamos el objeto en el heroe.
-                    ((Potion)c).use(hero, Potion.Types.HEALTH_POTION);
-
-                    // Realizamos la comprobacion del SDK para modificar la salud del heroe.
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        pbHeroLP.setProgress(hero.getLp(), true);
-                    } else
-                        pbHeroLP.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                pbHeroLP.setProgress(hero.getLp());
-                            }
-                        });
-
-                    // Actualizamos el Log para que nos muestre el resultado de la operacion.
-                    tvLog.append(hero.getName()+" used " + c.getName()
-                            + ".\n----------------------------------------\n");
-
-                    // En caso de que la cantidad del objeto consumido sea 0, lo eliminamos del
-                    // inventario.
-                    if (c.getQuantity()<= 0)
-                        inventory.remove(0);
-
-                    // Reasignamos el inventario para que el consumo del objeto sea efectivo.
-                    hero.setInventory(inventory);
-
-                    // Jugamos el turno y llamamos a la jugada del enemigo.
-                    playTurn();
-                    enemyPlay();
-                } else
-                    // Si el inventario esta vacio, lo avisamos y no se realiza la jugada.
-                    Toast.makeText(getContext(), "No items in inventory", Toast.LENGTH_SHORT).show();
-            }
+            // Jugamos el turno y llamamos a la jugada del enemigo.
+            playTurn();
+            enemyPlay();
         });
 
         // endregion [END buttons_click_listeners]
@@ -355,27 +254,10 @@ public class BattleFragment extends Fragment implements IAbilityListener {
      *
      * */
     public void enemyPlay() {
-
         // Recogemos el valor del ataque del enemigo y lo guardamos en una variable.
-        int enemyDmg = enemy.attack();
-
-        // Reducimos la vida del heroe en una cantidad igual al ataque del enemigo.
-        hero.setLp(hero.getLp() - enemyDmg);
-
-        // Realizamos la comprobacion del SDK de android y realizamos la accion correspondiente.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            pbHeroLP.setProgress(hero.getLp(), true);
-        else
-            pbHeroLP.post(new Runnable() {
-                @Override
-                public void run() {
-                    pbHeroLP.setProgress(hero.getLp());
-                }
-            });
-
         // Agregamos el resultado de la accion al Log.
-        tvLog.append(enemy.getName() + " attacked and dealt " + enemyDmg + " damage to " + hero.getName()
-                +".\n----------------------------------------\n");
+        tvLog.append(enemy.attack(hero));
+        updateHeroLP();
 
         // Comprobamos si los personajes aun tienen vida,
         if (hero.getLp()>0 && enemy.getLp()>0){
@@ -395,30 +277,36 @@ public class BattleFragment extends Fragment implements IAbilityListener {
      * */
     private void showAlertDialog(String message) {
 
-        // Creamos un dialogo con un titulo avisando del resultado de la partida y un mensaje que
-        // nos avisa de que vamos a volver a la pantalla de login.
-        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity())
-                .setTitle(message);
-                //.setMessage("Press OK to go to login screen.");
+        // Creamos un dialogo con un titulo avisando del resultado de la partida.
+        AlertDialog.Builder alertDialog;
+
+        // HAcemos un split del mensaje para comprobar la informacion que contiene.
+        String[] messageArray = message.split("\n");
+        if (messageArray.length > 2)
+            // Si el array guardado contiene mas de 2 elementos contiene informacion
+            // extra por la subida de nivel del heroe, por lo que mostramos el titulo desde el
+            // array y la informacion extra desde un substring a partir del final del titulo.
+            alertDialog = new AlertDialog.Builder(Objects.requireNonNull(getActivity()))
+                    .setTitle(messageArray[0])
+                    .setMessage(message.substring(messageArray[0].length()+1));
+        else
+            // En caso contrario no hay ninguna informacion extra, por lo que mostramos el mensaje
+            // directamente
+            alertDialog  = new AlertDialog.Builder(Objects.requireNonNull(getActivity()))
+                    .setTitle(message);
 
         // Asignamos al dialogo el boton OK con el click listener.
-        alertDialog.setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // Cuando el usuario le de click al boton OK, recreamos la activity para reiniciar
-                // el juego y volver al menu de login.
-                FragmentManager manager = getFragmentManager();
+        alertDialog.setNeutralButton(android.R.string.ok, (dialog, which) -> {
+            // Cuando el usuario le de click al boton OK, cargamos de nuevo el DungeonFragment
+            FragmentManager manager = getFragmentManager();
+            DungeonFragment fragment = DungeonFragment.newInstance(usrUID, pos, hero);
 
-                DungeonFragment fragment = DungeonFragment.newInstance(usrUID, pos, hero);
-                String newFragment = fragment.getClass().getName();
-                manager.beginTransaction()
-                        .replace(R.id.container, fragment, newFragment)
-                        .commit();
-
-            }
+            // Comprobamos que el manager no sea null y cargamos el fragment
+            assert manager != null;
+            DbUtils.loadFragment(manager, fragment);
         });
 
-        // creamos el dialogo y hacemos que no se pueda cancelar pulsando fuera y lo mostramos.
+        // Creamos el dialogo, hacemos que no se pueda cancelar pulsando fuera y lo mostramos.
         AlertDialog alert = alertDialog.create();
         alert.setCanceledOnTouchOutside(false);
         alert.show();
@@ -433,35 +321,77 @@ public class BattleFragment extends Fragment implements IAbilityListener {
         btnAttack.setClickable(false);
         btnItems.setClickable(false);
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
         // Creamos un String que asignaremos al realizar la comprobacion del ganador
         // con un mensaje acorde al resultado de la partida.
-        String message;
+        StringBuilder message = new StringBuilder();
         // Comprobamos si el heroe tiene mas vida que el enemigo, en cuyo caso ganaria
         if (hero.getLp()>enemy.getLp()){
             // Sumamos los puntos de experiencia al heroe
             hero.setExp(hero.getExp() + 50);
+            message.append("=========You Win!=========\n");
 
             if (hero.getExp()>= hero.getReqExp()) {
                 // Si el heroe ha alcanzado o superado los puntos de experiencia requeridos para
                 // subir de nivel, aumenta en 1 su nivel y arrastra los puntos extra para el proximo
                 hero.lvlUp();
+                // Aumentamos los atributos del heroe y los agregamos al mensaje del log
+                message.append(DbUtils.statusLvlUp(hero));
+                // Restauramos la salud y la energia del heroe al maximo
+                hero.setLp(hero.getMaxLp());
+                hero.setMp(hero.getMaxMp());
                 hero.setExp(hero.getExp() - hero.getReqExp());
             }
-            message = "=========You Win!=========";
         } else {
             // En caso contrario habria perdido
             hero.setLp(hero.getMaxLp());
-            message = "=========You Lose=========";
+            message.append("=========You Lose=========\n");
         }
 
-        showAlertDialog(message);
+        // Mostramos el dialogo
+        showAlertDialog(message.toString());
 
         // Agregamos el mensaje al Log de la partida y movemos el scroll al final
         tvLog.append(message);
         scroll.fullScroll(View.FOCUS_DOWN);
 
+    }
+
+    void updateHeroLP(){
+        // Realizamos la comprobacion del SDK para modificar la salud del heroe.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            pbHeroLP.setProgress(hero.getLp(), true);
+        } else
+            pbHeroLP.post(() -> pbHeroLP.setProgress(hero.getLp()));
+                    /* -- Solucion sin usar Lambda --
+                    pbHeroLP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            pbHeroLP.setProgress(hero.getLp());
+                        }
+                    });
+                    */
+    }
+    void updateHeroMP(){
+        // Realizamos la comprobacion del SDK y realizamos la asignacion correspondiente.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            pbHeroMP.setProgress(hero.getMp(), true);
+        else
+            pbHeroMP.post(()-> pbHeroMP.setProgress(hero.getMp()));
+    }
+    void updateEnemyLP(){
+        // Realizamos la comprobacion del SDK y realizamos la asignacion correspondiente.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            pbEnemyLP.setProgress(enemy.getLp(), true);
+        } else
+            pbEnemyLP.post(() -> pbEnemyLP.setProgress(enemy.getLp()));
+    }
+    void updateEnemyMP(){
+        // Realizamos la comprobacion del SDK y realizamos la asignacion correspondiente.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            pbEnemyMP.setProgress(enemy.getMp(),true);
+        else {
+            pbEnemyMP.post(() -> pbEnemyMP.setProgress(enemy.getMp()));
+        }
     }
 
     @Override
@@ -482,11 +412,14 @@ public class BattleFragment extends Fragment implements IAbilityListener {
         pbHeroLP = v.findViewById(R.id.pbHeroLP);
         pbHeroMP = v.findViewById(R.id.pbHeroMP);
         scroll = v.findViewById(R.id.scroll);
-        rvAbilites = v.findViewById(R.id.rvAbilities);
+        rvAbilities = v.findViewById(R.id.rvAbilities);
         llHero = v.findViewById(R.id.llHero);
 
-        // Recibimos los argumentos del Fragment para recibir al heroe y al enemigo/
+        // Recibimos los argumentos del Fragment para recibir al heroe y al enemigo
         Bundle b = getArguments();
+
+        // Comprobamos que el Bundle no sea nulo y asignamos lo que necesitamos
+        assert b != null;
         hero = (Hero) b.getSerializable(HERO);
         enemy = (Enemy) b.getSerializable(ENEMY);
         usrUID = b.getString(FB_USER_UID);
@@ -498,41 +431,36 @@ public class BattleFragment extends Fragment implements IAbilityListener {
 
     @Override
     public void onAbilityClick(Ability a) {
+        // Comprobamos el tipo de efecto que tiene la habilidad
         switch (a.getEffectType()) {
             case REGEN:
+                // En caso de que sea de tipo REGEN, recogemos el atributo effect y le hacemos
+                // split para obtener el valor y el atributo al que afecta
                 String[] effect = a.getEffect().split("\\+");
+                // Si el primer elemento del array es LP, es una habilidad para regenerar LP.
                 if (effect[0].equalsIgnoreCase("LP")){
-                    hero.setLp(hero.getLp()+ Integer.parseInt(effect[1]));
+                    // Si el heroe tiene menos MP que el coste de la habilidad, se avisa y no se
+                    // juega turno
                     if (hero.getMp() < ((Active)a).getCost()){
                         Toast.makeText(getContext(), "Not enough MP", Toast.LENGTH_SHORT).show();
                     } else {
+                        // En caso contrario, realizamos la accion de regenerar los LP, reducimos
+                        // los mp, actualizamos las barras correspondientes y jugamos el turno.
                         Toast.makeText(getContext(), a.getAbility(), Toast.LENGTH_SHORT).show();
-                        hero.setMp(hero.getMp()- ((Active)a).getCost());
+                        hero.setLp(hero.getLp() + Integer.parseInt(effect[1]));
+                        hero.setMp(hero.getMp() - ((Active)a).getCost());
 
-                        // Realizamos de nuevo la comprobacion del SDK y realizamos la asignacion correspondiente.
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            pbHeroLP.setProgress(hero.getLp(), true);
-                        } else
-                            pbHeroLP.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    pbHeroLP.setProgress(hero.getLp());
-                                }
-                        });
+                        // Actualizamos la barra de vida del heroe.
+                        updateHeroLP();
 
-                        // Realizamos de nuevo la comprobacion del SDK y realizamos la asignacion correspondiente.
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            pbHeroMP.setProgress(hero.getMp(), true);
-                        } else
-                            pbHeroMP.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    pbHeroMP.setProgress(hero.getLp());
-                                }
-                            });
+                        // Actualizamos la barra de energia del heroe.
+                        updateHeroMP();
+
                         playTurn();
                     }
                 }
+
+                // TODO Implementar los otros tipos de habilidades.
                 break;case STATUS_UP:break;case DMG:break; default:
         }
 

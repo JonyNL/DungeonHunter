@@ -95,16 +95,41 @@ public abstract class Hero extends Character{
 
     /** Metodos de utilidad */
 
-    public void useItem(int pos){
-        //TODO construct method
-        if (inventory.get(pos) instanceof Potion){
-            Potion p = (Potion) inventory.get(pos);
-            if (p.getQuantity() > 0){
-                ((Consumable)inventory.get(pos)).setQuantity(p.getQuantity()-1);
-                p.use(this, p.getType());
-            } else {
-                inventory.remove(pos);
+    public String useItem(int pos){
+        StringBuilder res = new StringBuilder();
+
+        // Comprobamos si el inventario tiene objetos dentro.
+        if (!inventory.isEmpty()) {
+
+            // Creamos un Consumable asignandole el objeto que vamos a usar.
+            Consumable c = (Consumable) inventory.get(pos);
+
+            // Reducimos la cantidad del objeto utilizado en 1.
+            ((Consumable) inventory.get(pos)).removeQuantity(1);
+
+            // Usamos el objeto.
+            if (c instanceof Potion){
+                switch (((Potion) c).getType()) {
+                    case LIFE_POTION:
+                        recoverLp(((Potion) c).getValue());
+                        break;
+                    case ELIXIR:
+                        recoverLp(maxLp);
+                        recoverMp(maxMp);
+                    case MANA_POTION:
+                        recoverMp(((Potion) c).getValue());
+                }
             }
-        }
+
+            // Actualizamos el Log para que nos muestre el resultado de la operacion.
+            res.append(this.name + " used " + c.getName()
+                    + ".\n----------------------------------------\n");
+
+            // En caso de que la cantidad del objeto consumido sea 0, lo eliminamos del
+            // inventario.
+            if (c.getQuantity() <= 0)
+                inventory.remove(pos);
+            return res.toString();
+        } else return "Empty";
     }
 }

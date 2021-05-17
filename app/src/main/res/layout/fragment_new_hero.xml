@@ -12,7 +12,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="30dp"
         android:gravity="center"
-        android:text="@string/newhero"
+        android:text="@string/new_hero"
         android:textSize="36sp" />
 
     <EditText

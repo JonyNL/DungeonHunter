@@ -1,9 +1,12 @@
 package com.jonyn.dungeonhunter.models;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Wizard extends Hero {
+    public static String TAG = "package com.jonyn.dungeonhunter.models.WIZARD";
 
     private int intelligence = 2;
 
@@ -38,13 +41,47 @@ public class Wizard extends Hero {
                 HeroClass.WIZARD);
     }
 
+    public void setIntelligence(int intelligence) {
+        this.intelligence = intelligence;
+    }
+
     public int getIntelligence() {
         return intelligence;
     }
 
     /** Metodos de utilidad */
     @Override
-    public int attack() {
-        return ((Wand) weapon).getMagic()*intelligence;
+    public String attack(Character enemy) {
+
+        int hitValue = (int) (Math.random()*100 + 1) + this.luck;
+        Log.i(TAG, Integer.toString(hitValue));
+
+        if (hitValue < 10) {
+            return this.name + " Casted basic spell to " + enemy.getName() +
+                    " but missed.\n----------------------------------------\n";
+
+        } else if (hitValue > 90) {
+            int hitDmg = (int) (((Wand)this.weapon).getMagic()*(Math.random()+1) +
+                    this.strength * this.intelligence + 10 - (enemy.defense * .25));
+
+            enemy.setLp(enemy.getLp() - hitDmg);
+
+            return this.name + " Casted basic spell and dealt "+ hitDmg +" critical damage to "
+                    + enemy.getName()+ ".\n----------------------------------------\n";
+        } else {
+            if (hitValue - (enemy.agility + enemy.luck) > 25) {
+                int hitDmg = (int) (((Wand)this.weapon).getMagic()*(Math.random()+1) +
+                        this.strength * this.intelligence - (enemy.defense * .5));
+
+                enemy.setLp(enemy.getLp() - hitDmg);
+
+                return this.name + " Casted basic spell and dealt "+ hitDmg +" damage to "
+                        + enemy.getName()+ ".\n----------------------------------------\n";
+            } else {
+                return (this.name + " Casted basic spell to " + enemy.getName() +
+                        " but missed.\n----------------------------------------\n");
+            }
+        }
     }
+
 }

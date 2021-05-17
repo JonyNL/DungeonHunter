@@ -34,7 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:text="@string/exp_value"
-        android:textSize="10dp"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="@+id/tvHeroLvl"
         app:layout_constraintStart_toStartOf="@+id/tvHeroLvl"
         app:layout_constraintTop_toBottomOf="@+id/tvHeroLvl" />
@@ -82,23 +82,23 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <Button
-            android:id="@+id/btnMenu1"
+            android:id="@+id/btnMenuStatus"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_weight="1"
-            android:text="Menu 1" />
+            android:text="@string/status" />
 
         <Button
-            android:id="@+id/btnMenu2"
+            android:id="@+id/btnMenuBag"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_weight="1"
-            android:text="Menu 2" />
+            android:text="@string/inventory" />
 
         <Button
-            android:id="@+id/btnMenu3"
+            android:id="@+id/btnEnemies"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
@@ -106,7 +106,7 @@
             android:text="Menu 3" />
 
         <Button
-            android:id="@+id/btnMenu4"
+            android:id="@+id/btnSettings"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
