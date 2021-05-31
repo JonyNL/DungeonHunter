@@ -6,33 +6,33 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import android.content.DialogInterface;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
 
 import com.jonyn.dungeonhunter.fragments.MainFragment;
 
 public class MainActivity extends AppCompatActivity {
     public static String TAG = "MAIN_ACTIVITY";
-    private Handler mHandler = new Handler();
-
+    private final Handler mHandler = new Handler();
 
     /**Runnable que gestiona el comportamiento de la interfaz del sistema*/
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hideSystemUI();
-        }
-    };
+    private final Runnable mHideRunnable = this::hideSystemUI;
 
     private FrameLayout container;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+            DbUtils.setMediaPlayer(MediaPlayer.create(getApplicationContext(), R.raw.rollinghard));
+            DbUtils.getMediaPlayer().setLooping(true);
+            DbUtils.getMediaPlayer().start();
+
+
+        DbUtils.loadSounds(this);
 
         setContentView(R.layout.activity_main);
 
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager manager = getSupportFragmentManager();
 
         // Creamos un MainFragment pasandole dos Strings vacios como parametros.
-        Fragment fragment = MainFragment.newInstance();
+        Fragment fragment = MainFragment.newInstance(false);
 
         // A traves del FragmentManager que guardamos antes, realizamos la transaccion
         // del fragment
@@ -57,12 +57,9 @@ public class MainActivity extends AppCompatActivity {
         // Cada vez que se deslice para mostrar la UI del dispositivo, llamamos al metodo
         // delayedHide() para ocultarla automaticamente.
         getWindow().getDecorView().setOnSystemUiVisibilityChangeListener
-                (new View.OnSystemUiVisibilityChangeListener() {
-                    @Override
-                    public void onSystemUiVisibilityChange(int visibility) {
-                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                            delayedHide();
-                        }
+                (visibility -> {
+                    if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                        delayedHide();
                     }
                 });
 
@@ -79,24 +76,15 @@ public class MainActivity extends AppCompatActivity {
      * */
     private void hideSystemUI() {
         int uiOptions;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-            uiOptions = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    // Set the content to appear under the system bars so that the
-                    // content doesn't resize when the system bars hide and show.
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    // Hide the nav bar and status bar
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN;
-        } else {
-            uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    // Hide the nav bar and status bar
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN;
-        }
+        uiOptions = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                // Set the content to appear under the system bars so that the
+                // content doesn't resize when the system bars hide and show.
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                // Hide the nav bar and status bar
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN;
         getWindow().getDecorView().setSystemUiVisibility(uiOptions);
     }
 
@@ -107,23 +95,37 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         // Hacemos que al pulsar back en cualquier parte de la app salga un dialogo que nos
         // pregunte si queremos cerrar la app, y en caso positivo la cerramos
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case DialogInterface.BUTTON_POSITIVE:
-                        MainActivity.this.finish();
-                        break;
+        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+            switch (which){
+                case DialogInterface.BUTTON_POSITIVE:
+                    MainActivity.this.finish();
+                    break;
 
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        dialog.dismiss();
-                        break;
-                }
+                case DialogInterface.BUTTON_NEGATIVE:
+                    dialog.dismiss();
+                    break;
             }
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Close app?").setPositiveButton("Yes", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener).show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (DbUtils.getMediaPlayer() == null) {
+            DbUtils.setMediaPlayer(MediaPlayer.create(getApplicationContext(), R.raw.rollinghard));
+            DbUtils.getMediaPlayer().setLooping(true);
+            DbUtils.getMediaPlayer().start();
+        }
+    }
+
+    public void onPause() {
+        super.onPause();
+        DbUtils.getMediaPlayer().stop();
+        DbUtils.getMediaPlayer().release();
+        DbUtils.setMediaPlayer(null);
     }
 }

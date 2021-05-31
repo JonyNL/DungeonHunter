@@ -13,6 +13,7 @@
         android:layout_marginTop="10dp"
         android:text="@string/heroName"
         android:textAlignment="center"
+        android:textColor="@android:color/white"
         android:textSize="28sp"
         app:layout_constraintEnd_toStartOf="@+id/tvHeroLvl"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,7 +24,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:text="@string/hero_lvl"
+        android:text="@string/level"
+        android:textColor="@android:color/white"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -34,42 +36,60 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:text="@string/exp_value"
+        android:textColor="@android:color/white"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="@+id/tvHeroLvl"
         app:layout_constraintStart_toStartOf="@+id/tvHeroLvl"
         app:layout_constraintTop_toBottomOf="@+id/tvHeroLvl" />
 
+    <SeekBar
+        android:id="@+id/sbDProgress"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:clickable="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:indeterminate="false"
+        android:longClickable="false"
+        android:max="4"
+        android:nestedScrollingEnabled="false"
+        android:paddingTop="6dip"
+        android:paddingBottom="6dip"
+        android:progress="1"
+        android:progressTint="@color/seekBar"
+        android:soundEffectsEnabled="false"
+        android:thumb="@color/fui_transparent"
+        app:layout_constraintBottom_toTopOf="@+id/btnAdvance"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvFloorStage"
+        app:tickMark="@drawable/cross24" />
+
     <Button
-        android:id="@+id/btnDLeft"
+        android:id="@+id/btnAdvance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Left"
+        android:background="@drawable/btn01"
+        android:text="@string/advance"
         app:layout_constraintBottom_toTopOf="@id/llBtns"
-        app:layout_constraintEnd_toStartOf="@+id/btnDFront"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvHeroName" />
 
-    <Button
-        android:id="@+id/btnDFront"
+    <TextView
+        android:id="@+id/tvFloorStage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Front"
-        app:layout_constraintBottom_toTopOf="@id/llBtns"
-        app:layout_constraintEnd_toStartOf="@+id/btnDRight"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/btnDLeft"
-        app:layout_constraintTop_toBottomOf="@+id/tvHeroName" />
-
-    <Button
-        android:id="@+id/btnDRight"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Right"
-        app:layout_constraintBottom_toTopOf="@id/llBtns"
+        android:text="@string/floor_stage_run"
+        android:textColor="@android:color/white"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/sbDProgress"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/btnDFront"
+        app:layout_constraintHorizontal_bias="0.454"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvHeroName" />
 
     <LinearLayout
@@ -81,37 +101,49 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <Button
-            android:id="@+id/btnMenuStatus"
+        <ImageButton
+            android:id="@+id/ibMenuStatus"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_weight="1"
-            android:text="@string/status" />
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/status_img_desc"
+            android:src="@drawable/profile" />
 
-        <Button
-            android:id="@+id/btnMenuBag"
+        <ImageButton
+            android:id="@+id/ibMenuBag"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_weight="1"
-            android:text="@string/inventory" />
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/bag_btn_desc"
+            android:src="@drawable/bag"
+            android:text="@string/inventory"
+            android:textSize="12sp" />
 
-        <Button
-            android:id="@+id/btnEnemies"
+        <ImageButton
+            android:id="@+id/ibEnemies"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_weight="1"
-            android:text="Menu 3" />
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/enemies_btn_desc"
+            android:src="@drawable/record"
+            android:textSize="12sp" />
 
-        <Button
-            android:id="@+id/btnSettings"
+        <ImageButton
+            android:id="@+id/ibSettings"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_weight="1"
-            android:text="Menu 4" />
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/settings_btn_desc"
+            android:src="@drawable/settings"
+            android:textSize="12sp" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -31,6 +31,7 @@ public abstract class Ability implements Serializable {
     protected String ability;
     protected String definition;
     protected String effect;
+    protected boolean unlocked;
     protected AbilityType abilityType;
     protected EffectType effectType;
 
@@ -38,10 +39,12 @@ public abstract class Ability implements Serializable {
     public Ability(){}
 
     // Constructor con parametros.
-    public Ability(String ability, String definition, String effect, AbilityType abilityType, EffectType effectType){
+    public Ability(String ability, String definition, String effect, boolean unlocked,
+                   AbilityType abilityType, EffectType effectType){
         this.ability = ability;
         this.definition = definition;
         this.effect = effect;
+        this.unlocked = unlocked;
         this.abilityType = abilityType;
         this.effectType = effectType;
     }
@@ -65,5 +68,9 @@ public abstract class Ability implements Serializable {
 
     public EffectType getEffectType() {
         return effectType;
+    }
+
+    public boolean isUnlocked() {
+        return unlocked;
     }
 }

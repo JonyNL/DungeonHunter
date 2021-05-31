@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <ImageView
+        android:id="@+id/ivEnemyRecImg"
+        android:layout_width="0dp"
+        android:layout_height="150dp"
+        android:contentDescription="@string/enemy_img_desc"
+        app:layout_constraintBottom_toTopOf="@+id/svScrollView"
+        app:layout_constraintEnd_toStartOf="@+id/tvEnemyInfo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/kappa" />
+
+
+    <TextView
+        android:id="@+id/tvEnemyInfo"
+        android:layout_width="0dp"
+        android:layout_height="150dp"
+        android:layout_marginBottom="5dp"
+        android:gravity="center_vertical"
+        android:text="@string/enemy_info"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@+id/svScrollView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/ivEnemyRecImg"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ScrollView
+        android:id="@+id/svScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_margin="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ivEnemyRecImg">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvEnemyDesc"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut nisl urna. Mauris hendrerit pellentesque eros id varius. Vestibulum aliquam erat a ligula semper viverra. Nunc semper tellus pellentesque mi euismod, vel egestas urna tempor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; In ornare tortor et facilisis ultrices. Aenean tincidunt nunc sed dui dictum vestibulum. Duis lacinia neque ornare est malesuada, in dignissim tortor laoreet. Aliquam egestas diam id orci molestie, nec euismod orci venenatis. Fusce tincidunt arcu eu feugiat faucibus." />
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

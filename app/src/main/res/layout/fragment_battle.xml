@@ -10,7 +10,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3"
+        android:layout_weight="5"
         android:orientation="horizontal">
 
         <ImageButton
@@ -18,16 +18,25 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/background_light"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/ib_log"
             android:src="@android:drawable/ic_menu_recent_history" />
 
         <TextView
             android:id="@+id/tvEnemyName"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="9"
+            android:layout_weight="7"
             android:gravity="center"
-            android:text="Kappa"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvEnemyLvl"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:text="@string/level"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -45,7 +54,7 @@
 
     <ProgressBar
         android:id="@+id/pbEnemyMP"
-        style="?android:attr/progressBarStyleHorizontal"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginLeft="15dp"
@@ -60,36 +69,65 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="50"
+        android:contentDescription="@string/enemy_img_desc"
         app:srcCompat="@drawable/kappa"
         tools:src="@tools:sample/avatars" />
 
-    <ScrollView
-        android:id="@+id/scroll"
+    <TextView
+        android:id="@+id/tvLog"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="20"
-        android:fillViewport="true"
-        android:visibility="visible">
+        android:layout_weight="12" />
+
+    <LinearLayout
+        android:id="@+id/llStatus"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <TextView
-            android:id="@+id/tvLog"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </ScrollView>
+            android:id="@+id/tvHeroStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_weight="9.5"
+            android:gravity="center"
+            android:text="@string/hero_status" />
+
+        <ImageButton
+            android:id="@+id/ibClose"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:layout_weight=".5"
+            android:background="#00000000"
+            android:contentDescription="@string/close_btn_desc"
+            android:src="@android:drawable/ic_menu_close_clear_cancel" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvAbilities"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="21"
+        android:layout_weight="24"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvItems"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="24"
         android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/llHero"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="21"
-        android:orientation="horizontal">
+        android:layout_weight="27"
+        android:orientation="horizontal"
+        android:baselineAligned="false">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -98,12 +136,11 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvPlayerName"
+                android:id="@+id/tvBtHeroName"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="15"
                 android:gravity="center"
-                android:text="Jony"
                 android:textStyle="bold" />
 
             <ImageView
@@ -111,7 +148,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
                 android:layout_weight="65"
-                app:srcCompat="@drawable/ryuma"
+                android:contentDescription="@string/hero_img_desc"
+                app:srcCompat="@drawable/warrior"
                 tools:src="@tools:sample/avatars" />
 
             <ProgressBar
@@ -142,25 +180,32 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_margin="5dp"
             android:layout_weight="60"
             android:orientation="vertical">
 
             <Button
                 android:id="@+id/btnAttack"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn01"
                 android:text="@string/attack" />
 
             <Button
                 android:id="@+id/btnAbilities"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn01"
                 android:text="@string/abilities" />
 
             <Button
                 android:id="@+id/btnItems"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn01"
                 android:text="@string/items" />
         </LinearLayout>
 

@@ -32,6 +32,9 @@ public abstract class Consumable extends Item {
         this.quantity = quantity;
     }
 
+    public void quantityUp(int q){
+        this.quantity += q;
+    }
 
     /** Metodos de utilidad */
 

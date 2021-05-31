@@ -1,21 +1,28 @@
 package com.jonyn.dungeonhunter.fragments;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jonyn.dungeonhunter.DbUtils;
 import com.jonyn.dungeonhunter.R;
+import com.jonyn.dungeonhunter.models.DungeonProgress;
 import com.jonyn.dungeonhunter.models.Enemy;
 import com.jonyn.dungeonhunter.models.Hero;
+
+import java.util.ArrayList;
 
 import static com.jonyn.dungeonhunter.DbUtils.FB_USER_UID;
 import static com.jonyn.dungeonhunter.DbUtils.HERO;
@@ -28,23 +35,25 @@ import static com.jonyn.dungeonhunter.DbUtils.HERO_POS;
 public class DungeonFragment extends Fragment {
     public static final String TAG = "DUNGEON_FRAGMENT";
 
-    // Elementos comunes recibidos del anterior fragment
+    // Elementos comunes de utilidad y recibidos del anterior fragment
     private String usrUID;
     private int heroPos;
     private Hero hero;
+    private DungeonProgress dungeonProgress;
     private Enemy enemy;
 
     // Elementos de la vista
     private TextView tvHeroName;
     private TextView tvHeroLvl;
     private TextView tvHeroExp;
-    private Button btnDLeft;
-    private Button btnDFront;
-    private Button btnDRight;
-    private Button btnMenuStats;
-    private Button btnMenuBag;
-    private Button btnEnemies;
-    private Button btnSettings;
+    private TextView tvFloorStage;
+    private Button btnAdvance;
+    private ImageButton ibMenuStats;
+    private ImageButton ibMenuBag;
+    private ImageButton ibEnemies;
+    private ImageButton ibSettings;
+    private SeekBar sbDProgress;
+
 
     public DungeonFragment() {
         // Required empty public constructor
@@ -68,72 +77,6 @@ public class DungeonFragment extends Fragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-
-        // Asignamos el texto correspondiente a los elementos de la vista
-        tvHeroName.setText(hero.getName());
-        tvHeroLvl.setText(getString(R.string.hero_lvl, String.valueOf(hero.getLvl())));
-        tvHeroExp.setText(getString(R.string.exp_value,
-                String.valueOf(hero.getExp()), String.valueOf(hero.getReqExp())));
-
-        // Creamos el listener a agregar a los botones.
-        View.OnClickListener listener = v -> {
-            // Asignamos el FragmentManager a una variable para usarlo mas adelante.
-            // comprobamos que no sea null y realizamos una accion dependiendo del ID de la vista
-            FragmentManager manager = getFragmentManager();
-            assert manager != null;
-            switch (v.getId()){
-                case R.id.btnDLeft:case R.id.btnDFront:case R.id.btnDRight:
-
-                    // Obtenemos un enemigo desde DbUtils y lo asignamos a la variable local.
-                    enemy = DbUtils.getEnemy();
-
-                    // Creamos una variable BattleFragment y dependiendo de si el enemigo es o no 
-                    // null lo lanzamos usando esa variable o creamos un enemigo nuevo.
-                    BattleFragment bFragment;
-                    if (enemy!= null){
-                        enemy.setLp(enemy.getMaxLp());
-                        bFragment = BattleFragment.newInstance(usrUID, heroPos, hero, enemy);
-                    } else {
-                        bFragment = BattleFragment
-                                .newInstance(usrUID, heroPos, hero, new Enemy("Kappa", Enemy.Types.DEMON));
-                    }
-
-                    // Cargamos el fragment desde DbUtils
-                    DbUtils.loadFragment(manager, bFragment);
-                    break;
-                case R.id.btnMenuStatus:
-                    // Creamos un StatusFragment y la lanzamos a traves de DbUtils.
-                    StatusFragment sFragment = StatusFragment.newInstance(usrUID, heroPos, hero);
-                    DbUtils.loadFragment(manager, sFragment);
-                    break;
-                case R.id.btnMenuBag:
-                    // Creamos un InventoryFragment y la lanzamos a traves de DbUtils.
-                    InventoryFragment iFragment = InventoryFragment.newInstance(usrUID, heroPos, hero);
-                    DbUtils.loadFragment(manager, iFragment);
-                    break;
-
-                    // TODO Crear e implementar fragments para el resto de opciones
-                case R.id.btnEnemies: case R.id.btnSettings:
-                    Toast.makeText(getContext(), getResources().getResourceEntryName(v.getId()),
-                            Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        };
-
-        // Asignamos el listener a los botones
-        btnDLeft.setOnClickListener(listener);
-        btnDFront.setOnClickListener(listener);
-        btnDRight.setOnClickListener(listener);
-        btnMenuStats.setOnClickListener(listener);
-        btnMenuBag.setOnClickListener(listener);
-        btnEnemies.setOnClickListener(listener);
-        btnSettings.setOnClickListener(listener);
-
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflamos la vista del fragment y lo asignamos a una variable
@@ -151,20 +94,110 @@ public class DungeonFragment extends Fragment {
         // terminado una batalla se guarden los cambios en el heroe
         DbUtils.updateDbHeroList(usrUID);
 
-        // Buscamos y asignamos las vistas a sus elementos locales
+        // Buscamos y asignamos los componentes a sus variables locales
         tvHeroName = v.findViewById(R.id.tvHeroName);
         tvHeroLvl = v.findViewById(R.id.tvHeroLvl);
         tvHeroExp = v.findViewById(R.id.tvHeroExp);
-        btnDLeft = v.findViewById(R.id.btnDLeft);
-        btnDFront = v.findViewById(R.id.btnDFront);
-        btnDRight = v.findViewById(R.id.btnDRight);
-        btnMenuStats = v.findViewById(R.id.btnMenuStatus);
-        btnMenuBag = v.findViewById(R.id.btnMenuBag);
-        btnEnemies = v.findViewById(R.id.btnEnemies);
-        btnSettings = v.findViewById(R.id.btnSettings);
+        btnAdvance = v.findViewById(R.id.btnAdvance);
+        ibMenuStats = v.findViewById(R.id.ibMenuStatus);
+        ibMenuBag = v.findViewById(R.id.ibMenuBag);
+        ibEnemies = v.findViewById(R.id.ibEnemies);
+        ibSettings = v.findViewById(R.id.ibSettings);
+        tvFloorStage = v.findViewById(R.id.tvFloorStage);
+        sbDProgress = v.findViewById(R.id.sbDProgress);
 
         // Devolvemos la vista
         return v;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    public void onStart() {
+        super.onStart();
+        /* if (hero.getDungeonProgress() == null)
+            hero.setDungeonProgress(new DungeonProgress(
+                    1, 1, 1, new ArrayList<>()));*/
+
+        // Obtenemos el progreso del heroe
+        dungeonProgress = hero.getDungeonProgress();
+
+        // Asignamos el texto correspondiente a los elementos de la vista
+        tvHeroName.setText(hero.getName());
+        tvHeroLvl.setText(getString(R.string.level, hero.getLvl()));
+        tvHeroExp.setText(getString(R.string.exp_value,
+                String.valueOf(hero.getExp()), String.valueOf(hero.getReqExp())));
+        tvFloorStage.setText(getString(R.string.floor_stage_run, dungeonProgress.getRun(),
+                dungeonProgress.getFloor(), dungeonProgress.getStagePos()));
+
+        // Ajustamos el seekBar al proceso del heroe
+        sbDProgress.setMax(hero.getDungeonProgress().getFloorProgress().size() - 1);
+        sbDProgress.setProgress(hero.getDungeonProgress().getStagePos() - 1);
+
+        // Asignamos un onTouchListener que directamente devuelva true para que no sea interactivo
+        sbDProgress.setOnTouchListener((v, event) -> true);
+        // Creamos el btnListener para los botones.
+        @SuppressLint("NonConstantResourceId")
+        View.OnClickListener btnListener = v -> {
+            // Asignamos el FragmentManager a una variable para usarlo mas adelante.
+            // comprobamos que no sea null y realizamos una accion dependiendo del ID de la vista
+            FragmentManager manager = getFragmentManager();
+            assert manager != null;
+            switch (v.getId()){
+                case R.id.btnAdvance:
+                    // Obtenemos un enemigo desde DbUtils y lo asignamos a la variable local.
+                    enemy = DbUtils.getEnemy(dungeonProgress.getFloor(), dungeonProgress.getStagePos());
+
+                    // Creamos una variable BattleFragment y lo lanzamos con el enemigo
+                    BattleFragment bFragment;
+                    enemy.setLp(enemy.getMaxLp());
+                    bFragment = BattleFragment.newInstance(usrUID, heroPos, hero, enemy);
+
+                    // Cargamos el fragment desde DbUtils
+                    DbUtils.loadFragment(manager, bFragment);
+                    break;
+                case R.id.ibMenuStatus:
+                    // Creamos un StatusFragment y la lanzamos a traves de DbUtils.
+                    StatusFragment sFragment = StatusFragment.newInstance(usrUID, heroPos, hero);
+                    DbUtils.loadFragment(manager, sFragment);
+                    break;
+                case R.id.ibMenuBag:
+                    // Creamos un InventoryFragment y la lanzamos a traves de DbUtils.
+                    InventoryFragment iFragment = InventoryFragment.newInstance(usrUID, heroPos, hero);
+                    DbUtils.loadFragment(manager, iFragment);
+                    break;
+                case R.id.ibEnemies:
+                    // Creamos un EnemiesFragment y la lanzamos a traves de DbUtils.
+                    EnemiesFragment eFragment = EnemiesFragment.newInstance(usrUID, heroPos, hero);
+                    DbUtils.loadFragment(manager, eFragment);
+                    break;
+                case R.id.ibSettings:
+                    // Creamos un SettingsFragment y la lanzamos a traves de DbUtils.
+                    SettingsFragment settFragment = SettingsFragment.newInstance(usrUID, heroPos, hero);
+                    DbUtils.loadFragment(manager, settFragment);
+                    break;
+            }
+        };
+
+        // Creamos un OnTouchListener para remarcar la pulsacion de los botones
+        @SuppressLint("ClickableViewAccessibility")
+        View.OnTouchListener tListener = (v, e) -> {
+            if(e.getAction() == MotionEvent.ACTION_DOWN) {
+                // Si el boton esta siendo pulsado, agregamos tinte al background color negro
+                v.setBackgroundTintList(getResources().getColorStateList(android.R.color.black));
+            } else if (e.getAction() == MotionEvent.ACTION_UP) {
+                // Si el boton esta dejando de pulsarse, establecemos el tinte del background a null
+                v.setBackgroundTintList(null);
+            }
+            return false;
+        };
+
+        // Asignamos el los listeners a los botones
+        btnAdvance.setOnClickListener(btnListener);
+        btnAdvance.setOnTouchListener(tListener);
+        ibMenuStats.setOnClickListener(btnListener);
+        ibMenuBag.setOnClickListener(btnListener);
+        ibEnemies.setOnClickListener(btnListener);
+        ibSettings.setOnClickListener(btnListener);
+
+    }
 }

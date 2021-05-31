@@ -31,4 +31,12 @@ public class Potion extends Consumable {
     public int getValue() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        return  "Type: " + type +
+                "\nEffect: " + effect +
+                "\nQuantity: " + quantity +
+                "\nDescription: " + description;
+    }
 }

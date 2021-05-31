@@ -8,10 +8,9 @@
         android:id="@+id/tvItem"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_margin="5dp"
-        android:background="@drawable/ic_launcher_background"
+        android:background="@drawable/item_bg"
         android:gravity="center"
-        android:textSize="34sp"
+        android:textSize="32sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

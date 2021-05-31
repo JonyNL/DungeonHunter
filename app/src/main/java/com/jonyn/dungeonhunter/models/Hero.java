@@ -21,6 +21,8 @@ public abstract class Hero extends Character{
     protected Weapon weapon;
     protected List<Item> inventory;
     protected HeroClass heroClass;
+    protected DungeonProgress dungeonProgress;
+
 
     // Constructor sin parametros
     public Hero(){
@@ -30,24 +32,26 @@ public abstract class Hero extends Character{
     // Constructor con parametros.
     public Hero(String name, int strength, int defense, int agility, int luck,
                 List<Ability> actives, List<Ability> passives, List<Item> inventory, Weapon weapon,
-                HeroClass heroClass) {
+                HeroClass heroClass, DungeonProgress dungeonProgress) {
         super(name, strength, defense, agility, luck, actives, passives);
         this.weapon = weapon;
         this.inventory = inventory;
         this.heroClass = heroClass;
+        this.dungeonProgress = dungeonProgress;
     }
 
     // Constructor con todos los parametros.
     public Hero(String name, int lvl, int maxMp, int maxLp, int lp, int mp, int strength, int defense,
                 int agility, int luck, int reqExp, int exp,
                 List<Ability> actives, List<Ability> passives, List<Item> inventory, Weapon weapon,
-                HeroClass heroClass) {
+                HeroClass heroClass, DungeonProgress dungeonProgress) {
         super(name, lvl, maxMp, maxLp, lp, mp, strength, defense, agility, luck, actives, passives);
         this.reqExp = reqExp;
         this.exp = exp;
         this.weapon = weapon;
         this.inventory = inventory;
         this.heroClass = heroClass;
+        this.dungeonProgress = dungeonProgress;
     }
 
     /** GETTERS Y SETTERS */
@@ -93,6 +97,15 @@ public abstract class Hero extends Character{
         this.heroClass = heroClass;
     }
 
+    // DungeonProgress
+    public DungeonProgress getDungeonProgress() {
+        return dungeonProgress;
+    }
+
+    public void setDungeonProgress(DungeonProgress dungeonProgress) {
+        this.dungeonProgress = dungeonProgress;
+    }
+
     /** Metodos de utilidad */
 
     public String useItem(int pos){
@@ -116,8 +129,10 @@ public abstract class Hero extends Character{
                     case ELIXIR:
                         recoverLp(maxLp);
                         recoverMp(maxMp);
+                        break;
                     case MANA_POTION:
                         recoverMp(((Potion) c).getValue());
+                        break;
                 }
             }
 

@@ -16,10 +16,12 @@ import java.util.List;
 public class AbilitiesAdapter extends RecyclerView.Adapter<AbilitiesAdapter.AbilitiesViewHolder>
     implements View.OnClickListener {
 
-    private final List<Ability> actives;
+    private final List<Ability> abilities;
     private View.OnClickListener listener;
+    private boolean actives;
 
-    public AbilitiesAdapter(List<Ability> actives){
+    public AbilitiesAdapter(List<Ability> abilities, boolean actives){
+        this.abilities = abilities;
         this.actives = actives;
     }
 
@@ -27,11 +29,11 @@ public class AbilitiesAdapter extends RecyclerView.Adapter<AbilitiesAdapter.Abil
     @Override
     public AbilitiesViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.abilities_listitem, parent, false);
+                .inflate(R.layout.battlelist_listitem, parent, false);
 
         itemView.setOnClickListener(listener);
 
-        return new AbilitiesViewHolder(itemView);
+        return new AbilitiesViewHolder(itemView, actives);
     }
 
     public void setListener(View.OnClickListener listener) {
@@ -47,29 +49,36 @@ public class AbilitiesAdapter extends RecyclerView.Adapter<AbilitiesAdapter.Abil
 
     @Override
     public void onBindViewHolder(@NonNull AbilitiesViewHolder holder, int position) {
-        holder.abilityBind((Active) actives.get(position));
+        holder.abilityBind(abilities.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return actives.size();
+        return abilities.size();
     }
 
     static class AbilitiesViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView tvAbility;
         private final TextView tvCost;
+        private final boolean actives;
 
-        public AbilitiesViewHolder(@NonNull View itemView) {
+        public AbilitiesViewHolder(@NonNull View itemView, boolean actives) {
             super(itemView);
+            this.actives = actives;
 
-            tvAbility = itemView.findViewById(R.id.tvAbility);
-            tvCost = itemView.findViewById(R.id.tvCost);
+            tvAbility = itemView.findViewById(R.id.tvName);
+            tvCost = itemView.findViewById(R.id.tvCostQtty);
         }
 
-        public void abilityBind(Active a){
-            tvAbility.setText(a.getAbility());
-            tvCost.setText(String.valueOf(a.getCost()));
+        public void abilityBind(Ability a){
+            if (actives){
+                tvAbility.setText(a.getAbility());
+                tvCost.setText(String.valueOf(((Active)a).getCost()));
+            } else {
+                tvAbility.setText(a.getAbility());
+                tvCost.setText("N/A");
+            }
         }
     }
 }

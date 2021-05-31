@@ -1,6 +1,6 @@
 package com.jonyn.dungeonhunter.models;
 
-import android.util.Log;
+import com.jonyn.dungeonhunter.DbUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +16,9 @@ public class Wizard extends Hero {
     // Constructor con parametros.
     public Wizard(String name, int strength, int defense, int agility, int luck,
                   List<Ability> actives, List<Ability> passives, List<Item> inventory,
-                  Weapon weapon, int intelligence, HeroClass heroClass) {
-        super(name, strength, defense, agility, luck, actives, passives, inventory, weapon, heroClass);
+                  Weapon weapon, int intelligence, HeroClass heroClass, DungeonProgress dungeonProgress) {
+        super(name, strength, defense, agility, luck, actives, passives, inventory, weapon, heroClass,
+                dungeonProgress);
         this.intelligence =  intelligence;
     }
 
@@ -25,20 +26,21 @@ public class Wizard extends Hero {
     public Wizard(String name, int lvl, int maxMp, int maxLp, int lp, int mp, int strength,
                   int defense, int agility, int luck, int reqExp, int exp,
                   List<Ability> actives, List<Ability> passives, List<Item> inventory,
-                  Weapon weapon, int intelligence, HeroClass heroClass) {
+                  Weapon weapon, int intelligence, HeroClass heroClass, DungeonProgress dungeonProgress) {
         super(name, lvl, maxMp, maxLp, lp, mp, strength, defense, agility, luck, reqExp, exp,
-                actives, passives, inventory, weapon, heroClass);
+                actives, passives, inventory, weapon, heroClass, dungeonProgress);
         this.intelligence = intelligence;
     }
 
 
     // Constructor con un parametro.
     public Wizard(String name) {
-        super(name, 3, 2, 8, 10, new ArrayList<Ability>(),
-                new ArrayList<Ability>(), new ArrayList<Item>(),
-                new Wand("Wooden wand", "Simple wand made of wood",
-                        100, true, 10, Weapon.WeaponType.WAND),
-                HeroClass.WIZARD);
+        super(name, 3, 2, 8, 10, DbUtils.getWizardAbilities().get(0),
+                DbUtils.getWizardAbilities().get(1), new ArrayList<>(), new Wand("Wooden wand",
+                        "Simple wand made of wood", 100, true,
+                        10, Weapon.WeaponType.WAND), HeroClass.WIZARD,
+                new DungeonProgress(1, 1, 1,
+                        new ArrayList<>()));
     }
 
     public void setIntelligence(int intelligence) {
@@ -54,9 +56,9 @@ public class Wizard extends Hero {
     public String attack(Character enemy) {
 
         int hitValue = (int) (Math.random()*100 + 1) + this.luck;
-        Log.i(TAG, Integer.toString(hitValue));
 
         if (hitValue < 10) {
+            DbUtils.playSound(1, DbUtils.getSfxVol());
             return this.name + " Casted basic spell to " + enemy.getName() +
                     " but missed.\n----------------------------------------\n";
 
@@ -66,6 +68,7 @@ public class Wizard extends Hero {
 
             enemy.setLp(enemy.getLp() - hitDmg);
 
+            DbUtils.playSound(0, DbUtils.getSfxVol());
             return this.name + " Casted basic spell and dealt "+ hitDmg +" critical damage to "
                     + enemy.getName()+ ".\n----------------------------------------\n";
         } else {
@@ -75,9 +78,11 @@ public class Wizard extends Hero {
 
                 enemy.setLp(enemy.getLp() - hitDmg);
 
+                DbUtils.playSound(0, DbUtils.getSfxVol());
                 return this.name + " Casted basic spell and dealt "+ hitDmg +" damage to "
                         + enemy.getName()+ ".\n----------------------------------------\n";
             } else {
+                DbUtils.playSound(1, DbUtils.getSfxVol());
                 return (this.name + " Casted basic spell to " + enemy.getName() +
                         " but missed.\n----------------------------------------\n");
             }

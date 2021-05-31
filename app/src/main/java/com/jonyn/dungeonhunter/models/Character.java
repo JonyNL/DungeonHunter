@@ -3,6 +3,7 @@ package com.jonyn.dungeonhunter.models;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class Character implements Serializable {
 
@@ -89,6 +90,12 @@ public abstract class Character implements Serializable {
         else this.lp = lp;
     }
 
+    public void damageLp(int dmg) {
+        this.lp -= dmg;
+        if (this.lp < 0)
+            this.lp = 0;
+    }
+
     public void recoverLp(int val){
         lp+=val;
         if (lp > maxLp)
@@ -113,14 +120,22 @@ public abstract class Character implements Serializable {
         else this.mp = mp;
     }
 
+    public int getMp() {
+        return mp;
+    }
+
     public void recoverMp(int val){
         mp+=val;
         if (mp > maxMp)
             mp = maxMp;
     }
 
-    public int getMp() {
-        return mp;
+    public void consumeMp(int use) {
+        if (use <= this.mp) {
+            this.mp -= use;
+            if (this.mp < 0)
+                this.mp = 0;
+        }
     }
 
     // Strength
@@ -201,5 +216,18 @@ public abstract class Character implements Serializable {
                 ", actives=" + actives +
                 ", passives=" + passives +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Character character = (Character) o;
+        return name.equals(character.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }

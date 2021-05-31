@@ -2,6 +2,8 @@ package com.jonyn.dungeonhunter.models;
 
 import android.util.Log;
 
+import com.jonyn.dungeonhunter.DbUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +30,7 @@ public class Enemy extends Character {
 
     // Constructor con parametros minimos.
     public Enemy(String name, Types type){
-        super(name, 8, 5, 7, 4, new ArrayList<Ability>(), new ArrayList<Ability>());
+        super(name, 8, 5, 7, 4, new ArrayList<>(), new ArrayList<>());
         this.type = type;
     }
 
@@ -39,12 +41,14 @@ public class Enemy extends Character {
         Log.i(TAG, Integer.toString(hitValue));
 
         if (hitValue < 10){
+            DbUtils.playSound(1, DbUtils.getSfxVol());
             return this.name + " tried to attack " + hero.getName()
-                    +" but failed.\n----------------------------------------\n";
+                    +" but missed.\n----------------------------------------\n";
         } else if (hitValue > 90) {
             int hitDmg = (int)
                     ((this.strength + 20 - (hero.defense * .25))*(Math.random()+1));
             hero.setLp(hero.getLp() - hitDmg);
+            DbUtils.playSound(0, DbUtils.getSfxVol());
             return this.name + " attacked and dealt "+ hitDmg +" critical damage to "
                     + hero.getName() +".\n----------------------------------------\n";
         } else {
@@ -53,12 +57,14 @@ public class Enemy extends Character {
                         ((this.strength + 10 - (hero.defense * .5))*(Math.random()+1));
                 hero.setLp(hero.getLp() - hitDmg);
 
+                DbUtils.playSound(0, DbUtils.getSfxVol());
                 return this.name + " attacked and dealt "+ hitDmg +" damage to " + hero.getName()
                         +".\n----------------------------------------\n";
-            } else
+            } else {
+                DbUtils.playSound(1, DbUtils.getSfxVol());
                 return this.name + " tried to attack " + hero.getName()
-                        +" but failed.\n----------------------------------------\n";
-
+                        + " but missed.\n----------------------------------------\n";
+            }
 
         }
     }
