@@ -82,6 +82,8 @@ public class DbUtils {
      *
      * @param context Contexto necesario para algunas operaciones.
      * @param usrUID UID del usuario logueado.
+     * @param fromStart Boolean que nos avisa si estamos cargando desde el boton de start
+     * @param manager FragmentManager para cargar el HeroSelectFragment si fromStart es true
      * */
     public static void loadHeroList(final Context context, final String usrUID,
                                     final boolean fromStart, final FragmentManager manager) {
@@ -321,7 +323,7 @@ public class DbUtils {
     }
 
     /**
-     * Metodo para parsear los items del inventario recogidos de la BBDD.
+     * Metodo para parsear las habilidades activas recogidas de la BBDD.
      *
      * @param dbActives Listado de habilidades recibido de la BBDD.
      * @return listado de objetos Item parseados.
@@ -365,7 +367,7 @@ public class DbUtils {
     }
 
     /**
-     * Metodo para parsear los items del inventario recogidos de la BBDD.
+     * Metodo para parsear las habilidades pasivas recibidas de la BBDD.
      *
      * @param dbPassives Listado de habilidades recibido de la BBDD.
      * @return listado de habilidades parseadas.
@@ -431,15 +433,6 @@ public class DbUtils {
      * */
     public static void clearHeroList(){
         heroes.clear();
-    }
-
-    /**
-     * Metodo para obtener el listado de heroes local.
-     *
-     * @return listado de heroes locales.
-     * */
-    public static List<Hero> getHeroes(){
-        return heroes;
     }
 
     /**
@@ -581,39 +574,6 @@ public class DbUtils {
         return null;
     }
 
-    //// Generic Utils ////
-
-    /**
-     * Metodo para cargar los sonidos para el juego
-     *
-     * @param context Contexto para acceder a los recursos
-     * */
-    public static void loadSounds(Context context){
-        soundIds[0] = sp.load(context, R.raw.hit, 1);
-        soundIds[1] = sp.load(context, R.raw.dodge, 1);
-    }
-
-    /**
-     * Metodo que ejecuta el sonido indicado
-     *
-     * @param pos Posicion en la lista del sonido
-     * @param vol Nivel de volumen para el sonido a reproducir
-     * */
-    public static void playSound(int pos, float vol) {
-        sp.play(soundIds[pos], vol, vol, 1, 0, 1.0f);
-    }
-
-    /**
-     * Metodo para generar un numero aleatorio
-     *
-     * @param min Numero minimo del aleatorio
-     * @param max Numero maximo del aleatorio
-     * */
-    public static int randomNumber(int min, int max){
-        Random rnd = new Random();
-        return rnd.nextInt(max-min+1)+min;
-    }
-
     /**
      * Metodo que devuelve el listado de habilidades de Guerrero
      *
@@ -629,9 +589,9 @@ public class DbUtils {
         // Agregamos las habilidades activas a la lista
         actives.add(
                 new Active(
-                "Big slash", "The hero brandishes his sword strongly towards his enemy.",
-                "physDmg 120", 30, true, Ability.AbilityType.ACTIVE,
-                Ability.EffectType.DMG));
+                        "Big slash", "The hero brandishes his sword strongly towards his enemy.",
+                        "physDmg 120", 30, true, Ability.AbilityType.ACTIVE,
+                        Ability.EffectType.DMG));
         actives.add(
                 new Active(
                         "Heroic thrust", "The hero uses his sword to thrust the enemy.",
@@ -688,7 +648,43 @@ public class DbUtils {
         return abilities;
     }
 
+    //// Generic Utils ////
+
+    /**
+     * Metodo para cargar los sonidos para el juego
+     *
+     * @param context Contexto para acceder a los recursos
+     * */
+    public static void loadSounds(Context context){
+        soundIds[0] = sp.load(context, R.raw.hit, 1);
+        soundIds[1] = sp.load(context, R.raw.dodge, 1);
+    }
+
+    /**
+     * Metodo que ejecuta el sonido indicado
+     *
+     * @param pos Posicion en la lista del sonido
+     * @param vol Nivel de volumen para el sonido a reproducir
+     * */
+    public static void playSound(int pos, float vol) {
+        sp.play(soundIds[pos], vol, vol, 1, 0, 1.0f);
+    }
+
+    /**
+     * Metodo para generar un numero aleatorio
+     *
+     * @param min Numero minimo del aleatorio
+     * @param max Numero maximo del aleatorio
+     * */
+    public static int randomNumber(int min, int max){
+        Random rnd = new Random();
+        return rnd.nextInt(max-min+1)+min;
+    }
+
     /**  GETTERS Y SETTERS  **/
+    public static List<Hero> getHeroes(){
+        return heroes;
+    }
 
     public static List<Enemy> getEnemies() {
         return enemies;
